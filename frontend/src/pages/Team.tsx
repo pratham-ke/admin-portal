@@ -21,7 +21,9 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -40,6 +42,7 @@ interface TeamMember {
 }
 
 const Team: React.FC = () => {
+  const navigate = useNavigate();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
@@ -137,13 +140,22 @@ const Team: React.FC = () => {
         <Typography variant="h4" component="h1">
           Team Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpen()}
-        >
-          Add Team Member
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpen()}
+          >
+            Add Team Member
+          </Button>
+        </Box>
       </Box>
 
       <TableContainer component={Paper}>

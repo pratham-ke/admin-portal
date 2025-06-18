@@ -25,7 +25,9 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -43,6 +45,7 @@ interface BlogPost {
 }
 
 const Blog: React.FC = () => {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -142,13 +145,22 @@ const Blog: React.FC = () => {
         <Typography variant="h4" component="h1">
           Blog Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpen()}
-        >
-          Add Blog Post
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpen()}
+          >
+            Add Blog Post
+          </Button>
+        </Box>
       </Box>
 
       <TableContainer component={Paper}>

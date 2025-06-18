@@ -12,6 +12,9 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
+  signup: (username: string, email: string, password: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string, confirmPassword: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -35,9 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           Authorization: `Bearer ${token}`,
         },
       });
-      setUser(response.data);
+      setUser(response.data.user || response.data); // support both {user} and user
     } catch (error) {
-      console.error('Error fetching user:', error);
       logout();
     }
   };
@@ -53,7 +55,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(newToken);
       setUser(userData);
     } catch (error) {
-      console.error('Login error:', error);
+      throw error;
+    }
+  };
+
+  const signup = async (username: string, email: string, password: string) => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/signup', {
+        username,
+        email,
+        password,
+        confirmPassword: password,
+      });
+      // Optionally auto-login after signup:
+      // const { token: newToken, user: userData } = response.data;
+      // localStorage.setItem('token', newToken);
+      // setToken(newToken);
+      // setUser(userData);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const resetPassword = async (token: string, password: string, confirmPassword: string) => {
+    try {
+      await axios.post('http://localhost:5000/api/auth/reset-password', {
+        token,
+        password,
+        confirmPassword,
+      });
+    } catch (error) {
       throw error;
     }
   };
@@ -70,6 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         token,
         login,
+        signup,
+        forgotPassword,
+        resetPassword,
         logout,
         isAuthenticated: !!token,
       }}

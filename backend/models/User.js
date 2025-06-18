@@ -34,6 +34,37 @@ module.exports = (sequelize) => {
         type: DataTypes.ENUM('admin', 'user'),
         defaultValue: 'user',
       },
+      // Password reset fields
+      resetToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      resetTokenExpiry: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      // Email verification fields
+      emailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      emailVerificationToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      emailVerificationExpiry: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      // Account status
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      lastLoginAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       hooks: {
@@ -55,6 +86,23 @@ module.exports = (sequelize) => {
 
   User.prototype.validatePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
+  };
+
+  User.prototype.updateLastLogin = async function () {
+    this.lastLoginAt = new Date();
+    await this.save();
+  };
+
+  User.prototype.clearResetToken = async function () {
+    this.resetToken = null;
+    this.resetTokenExpiry = null;
+    await this.save();
+  };
+
+  User.prototype.clearEmailVerificationToken = async function () {
+    this.emailVerificationToken = null;
+    this.emailVerificationExpiry = null;
+    await this.save();
   };
 
   return User;

@@ -1,115 +1,55 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const { Op } = require('sequelize');
-const { User } = require('../models');
+const { 
+  signup, 
+  login, 
+  getCurrentUser, 
+  forgotPassword, 
+  resetPassword, 
+  logout 
+} = require('../controllers/authController');
 const { auth } = require('../middleware/auth');
 
-// Register new user
-router.post('/register', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+/**
+ * @route   POST /api/auth/signup
+ * @desc    Register a new user
+ * @access  Public
+ */
+router.post('/signup', signup);
 
-    // Check if user already exists
-    const existingUser = await User.findOne({
-      where: {
-        [Op.or]: [{ email }, { username }],
-      },
-    });
+/**
+ * @route   POST /api/auth/login
+ * @desc    Login user
+ * @access  Public
+ */
+router.post('/login', login);
 
-    if (existingUser) {
-      return res.status(400).json({
-        message: 'User with this email or username already exists',
-      });
-    }
+/**
+ * @route   POST /api/auth/forgot-password
+ * @desc    Send password reset email
+ * @access  Public
+ */
+router.post('/forgot-password', forgotPassword);
 
-    // Create new user
-    const user = await User.create({
-      username,
-      email,
-      password,
-    });
+/**
+ * @route   POST /api/auth/reset-password
+ * @desc    Reset password with token
+ * @access  Public
+ */
+router.post('/reset-password', resetPassword);
 
-    // Generate token
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET || 'your_jwt_secret_key_here',
-      { expiresIn: '24h' }
-    );
+/**
+ * @route   GET /api/auth/me
+ * @desc    Get current user profile
+ * @access  Private
+ */
+router.get('/me', auth, getCurrentUser);
 
-    res.status(201).json({
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error registering user',
-      error: error.message,
-    });
-  }
-});
-
-// Login user
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find user
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Validate password
-    const isValidPassword = await user.validatePassword(password);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate token
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET || 'your_jwt_secret_key_here',
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error logging in',
-      error: error.message,
-    });
-  }
-});
-
-// Get current user
-router.get('/me', auth, async (req, res) => {
-  try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ['password'] },
-    });
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error fetching user data',
-      error: error.message,
-    });
-  }
-});
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user
+ * @access  Private
+ */
+router.post('/logout', auth, logout);
 
 module.exports = router; 

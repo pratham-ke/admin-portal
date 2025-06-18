@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, AppBar, Toolbar, Typography, IconButton } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
@@ -10,6 +10,15 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user } = useAuth();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const handleSidebarToggle = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
+  const drawerWidth = 240;
+  const collapsedDrawerWidth = 64;
+  const currentDrawerWidth = isSidebarCollapsed ? collapsedDrawerWidth : drawerWidth;
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -17,13 +26,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
+          width: `calc(100% - ${currentDrawerWidth}px)`,
+          transition: 'width 0.3s ease',
         }}
       >
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
+            aria-label="toggle sidebar"
             edge="start"
+            onClick={handleSidebarToggle}
             sx={{ mr: 2 }}
           >
             <MenuIcon />
@@ -37,13 +49,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Sidebar />
+      <Sidebar 
+        isCollapsed={isSidebarCollapsed} 
+        onToggle={handleSidebarToggle} 
+      />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - 240px)` },
+          width: `calc(100% - ${currentDrawerWidth}px)`,
+          transition: 'width 0.3s ease',
           mt: 8,
         }}
       >

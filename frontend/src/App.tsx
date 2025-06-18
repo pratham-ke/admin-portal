@@ -3,7 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout/Layout';
-import Login from './pages/Login';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Team from './pages/Team';
 import Blog from './pages/Blog';
@@ -29,7 +32,13 @@ const App: React.FC = () => {
       <AuthProvider>
         <Router>
           <Routes>
+            {/* Public Auth Routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            
+            {/* Protected Routes */}
             <Route
               path="/"
               element={

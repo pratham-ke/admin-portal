@@ -25,7 +25,9 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -43,6 +45,7 @@ interface PortfolioItem {
 }
 
 const Portfolio: React.FC = () => {
+  const navigate = useNavigate();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
@@ -140,13 +143,22 @@ const Portfolio: React.FC = () => {
         <Typography variant="h4" component="h1">
           Portfolio Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpen()}
-        >
-          Add Portfolio Item
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpen()}
+          >
+            Add Project
+          </Button>
+        </Box>
       </Box>
 
       <TableContainer component={Paper}>
