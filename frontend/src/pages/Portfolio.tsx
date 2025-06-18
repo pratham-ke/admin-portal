@@ -31,14 +31,15 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface PortfolioItem {
   id: number;
-  title: string;
+  portfolio_id: string;
+  name: string;
   description: string;
+  overview: string;
   image: string;
   category: string;
-  client: string;
-  date: string;
-  tags: string[];
-  status: 'draft' | 'published';
+  year: number;
+  website: string;
+  status: 'Exit' | 'Active';
 }
 
 const Portfolio: React.FC = () => {
@@ -46,14 +47,14 @@ const Portfolio: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [formData, setFormData] = useState<Partial<PortfolioItem>>({
-    title: '',
+    name: '',
     description: '',
+    overview: '',
     image: '',
     category: '',
-    client: '',
-    date: new Date().toISOString().split('T')[0],
-    tags: [],
-    status: 'draft',
+    year: new Date().getFullYear(),
+    website: '',
+    status: 'Active',
   });
   const { token } = useAuth();
 
@@ -79,14 +80,14 @@ const Portfolio: React.FC = () => {
     } else {
       setSelectedItem(null);
       setFormData({
-        title: '',
+        name: '',
         description: '',
+        overview: '',
         image: '',
         category: '',
-        client: '',
-        date: new Date().toISOString().split('T')[0],
-        tags: [],
-        status: 'draft',
+        year: new Date().getFullYear(),
+        website: '',
+        status: 'Active',
       });
     }
     setOpen(true);
@@ -152,10 +153,9 @@ const Portfolio: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Title</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Category</TableCell>
-              <TableCell>Client</TableCell>
-              <TableCell>Date</TableCell>
+              <TableCell>Year</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -163,10 +163,9 @@ const Portfolio: React.FC = () => {
           <TableBody>
             {items.map((item) => (
               <TableRow key={item.id}>
-                <TableCell>{item.title}</TableCell>
+                <TableCell>{item.name}</TableCell>
                 <TableCell>{item.category}</TableCell>
-                <TableCell>{item.client}</TableCell>
-                <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                <TableCell>{item.year}</TableCell>
                 <TableCell>{item.status}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpen(item)}>
@@ -190,10 +189,10 @@ const Portfolio: React.FC = () => {
           <DialogContent>
             <TextField
               fullWidth
-              label="Title"
-              value={formData.title}
+              label="Name"
+              value={formData.name}
               onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
               margin="normal"
               required
@@ -207,6 +206,17 @@ const Portfolio: React.FC = () => {
               }
               margin="normal"
               required
+            />
+            <TextField
+              fullWidth
+              label="Overview"
+              value={formData.overview}
+              onChange={(e) =>
+                setFormData({ ...formData, overview: e.target.value })
+              }
+              margin="normal"
+              multiline
+              rows={4}
             />
             <TextField
               fullWidth
@@ -229,35 +239,21 @@ const Portfolio: React.FC = () => {
             />
             <TextField
               fullWidth
-              label="Client"
-              value={formData.client}
+              label="Year"
+              type="number"
+              value={formData.year}
               onChange={(e) =>
-                setFormData({ ...formData, client: e.target.value })
+                setFormData({ ...formData, year: Number(e.target.value) })
               }
               margin="normal"
               required
             />
             <TextField
               fullWidth
-              label="Date"
-              type="date"
-              value={formData.date}
+              label="Website"
+              value={formData.website}
               onChange={(e) =>
-                setFormData({ ...formData, date: e.target.value })
-              }
-              margin="normal"
-              required
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              fullWidth
-              label="Tags (comma-separated)"
-              value={formData.tags?.join(', ')}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  tags: e.target.value.split(',').map((tag) => tag.trim()),
-                })
+                setFormData({ ...formData, website: e.target.value })
               }
               margin="normal"
             />
@@ -268,13 +264,13 @@ const Portfolio: React.FC = () => {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    status: e.target.value as 'draft' | 'published',
+                    status: e.target.value as 'Exit' | 'Active',
                   })
                 }
                 label="Status"
               >
-                <MenuItem value="draft">Draft</MenuItem>
-                <MenuItem value="published">Published</MenuItem>
+                <MenuItem value="Exit">Exit</MenuItem>
+                <MenuItem value="Active">Active</MenuItem>
               </Select>
             </FormControl>
           </DialogContent>
