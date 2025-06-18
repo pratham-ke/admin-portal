@@ -4,7 +4,7 @@ const { Portfolio } = require('../models');
 const { auth, adminAuth } = require('../middleware/auth');
 
 // Get all portfolio items
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const portfolio = await Portfolio.findAll({
       order: [['createdAt', 'DESC']],
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get single portfolio item
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const item = await Portfolio.findByPk(req.params.id);
     if (!item) {

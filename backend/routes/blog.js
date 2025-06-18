@@ -4,7 +4,7 @@ const { Blog } = require('../models');
 const { auth, adminAuth } = require('../middleware/auth');
 
 // Get all blogs
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const blogs = await Blog.findAll({
       order: [['createdAt', 'DESC']],
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get single blog
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const blog = await Blog.findByPk(req.params.id);
     if (!blog) {

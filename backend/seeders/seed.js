@@ -12,9 +12,26 @@ const seedDatabase = async () => {
       username: 'admin',
       email: 'admin@example.com',
       password: 'admin123',
-      role: 'admin',
+      role: 'admin',          
     });
     console.log('Admin user created successfully');
+
+    // Create additional users
+    await db.User.create({
+      username: 'pratham',
+      email: 'pratham.more@kernelequity.com',
+      password: 'pratham123',
+      role: 'admin',
+    });
+    console.log('Pratham user created successfully');
+
+    await db.User.create({
+      username: 'Demo',
+      email: 'prathammore.ke@gmail.com',
+      password: 'demo123',
+      role: 'admin',
+    });
+    console.log('Demo user created successfully');
 
     // Fetch and seed blog data
     const blogResponse = await axios.get('https://dhaval-patel-ke.github.io/kernel-images/kernel/blog.json');
@@ -23,7 +40,7 @@ const seedDatabase = async () => {
       try {
         const date = new Date(post.date);
         if (isNaN(date.getTime())) {
-          formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');  
         } else {
           formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
         }
@@ -62,30 +79,17 @@ const seedDatabase = async () => {
 
     // Fetch and seed portfolio data
     const portfolioResponse = await axios.get('https://dhaval-patel-ke.github.io/kernel-images/kernel/portfolio.json');
-    const formattedPortfolioData = portfolioResponse.data.map((item) => {
-      let formattedDate;
-      try {
-        const date = new Date(item.date);
-        if (isNaN(date.getTime())) {
-          formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        } else {
-          formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
-        }
-      } catch (error) {
-        formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      }
-      
-      return {
-        title: item.title,
-        description: item.description || '',
-        image: item.image || null,
-        category: item.category,
-        client: item.client,
-        date: formattedDate,
-        tags: item.tags || [],
-        status: item.status || 'draft',
-      };
-    });
+    const formattedPortfolioData = portfolioResponse.data.map((item) => ({
+      portfolio_id: item.id,
+      name: item.name,
+      description: item.description || '',
+      overview: item.overview || '',
+      image: item.image || null,
+      category: item.category,
+      year: item.year || null,
+      website: item.website || null,
+      status: item.status || 'Active',
+    }));
     await db.Portfolio.bulkCreate(formattedPortfolioData);
     console.log('Portfolio data seeded successfully');
 

@@ -9,13 +9,22 @@ module.exports = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      title: {
+      portfolio_id: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
+      },
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
       },
       description: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      overview: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       image: {
         type: DataTypes.STRING,
@@ -25,25 +34,17 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      client: {
-        type: DataTypes.STRING,
+      year: {
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
-      completion_date: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
-      technologies: {
-        type: DataTypes.JSON,
-        allowNull: true,
-      },
-      project_url: {
+      website: {
         type: DataTypes.STRING,
         allowNull: true,
       },
       status: {
-        type: DataTypes.ENUM('draft', 'published'),
-        defaultValue: 'draft',
+        type: DataTypes.ENUM('Exit', 'Active'),
+        defaultValue: 'Active',
       },
     },
     {

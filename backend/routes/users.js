@@ -3,6 +3,7 @@ const router = express.Router();
 const { User } = require('../models');
 const { auth, adminAuth } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
+const { Op } = require('sequelize');
 
 // Get all users (admin only)
 router.get('/', auth, adminAuth, async (req, res) => {
