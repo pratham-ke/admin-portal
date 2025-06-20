@@ -16,6 +16,8 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  TableSortLabel,
+  TablePagination,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -57,6 +59,10 @@ const Team: React.FC = () => {
     status: 'active',
   });
   const { token } = useAuth();
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [orderBy, setOrderBy] = useState<keyof TeamMember>('name');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const fetchMembers = async () => {
     try {
@@ -134,6 +140,40 @@ const Team: React.FC = () => {
     }
   };
 
+  const handleRequestSort = (property: keyof TeamMember) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+    if (b[orderBy] < a[orderBy]) {
+      return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+      return 1;
+    }
+    return 0;
+  }
+
+  function getComparator<Key extends keyof any>(order: 'asc' | 'desc', orderBy: Key): (a: { [key in Key]: any }, b: { [key in Key]: any }) => number {
+    return order === 'desc'
+      ? (a, b) => descendingComparator(a, b, orderBy)
+      : (a, b) => -descendingComparator(a, b, orderBy);
+  }
+
+  const sortedMembers = members.slice().sort(getComparator(order, orderBy));
+  const paginatedMembers = sortedMembers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -162,16 +202,50 @@ const Team: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>#</TableCell>
+              <TableCell sortDirection={orderBy === 'name' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'name'}
+                  direction={orderBy === 'name' ? order : 'asc'}
+                  onClick={() => handleRequestSort('name')}
+                >
+                  Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'position' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'position'}
+                  direction={orderBy === 'position' ? order : 'asc'}
+                  onClick={() => handleRequestSort('position')}
+                >
+                  Position
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'email' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'email'}
+                  direction={orderBy === 'email' ? order : 'asc'}
+                  onClick={() => handleRequestSort('email')}
+                >
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'status' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'status'}
+                  direction={orderBy === 'status' ? order : 'asc'}
+                  onClick={() => handleRequestSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {members.map((member) => (
+            {paginatedMembers.map((member: TeamMember, idx: number) => (
               <TableRow key={member.id}>
+                <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.position}</TableCell>
                 <TableCell>{member.email}</TableCell>
@@ -188,6 +262,15 @@ const Team: React.FC = () => {
             ))}
           </TableBody>
         </Table>
+        <TablePagination
+          component="div"
+          count={members.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
       </TableContainer>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>

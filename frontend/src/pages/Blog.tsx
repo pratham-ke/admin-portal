@@ -20,6 +20,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  TableSortLabel,
+  TablePagination,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -61,6 +63,10 @@ const Blog: React.FC = () => {
     status: 'draft',
   });
   const { token } = useAuth();
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [orderBy, setOrderBy] = useState<keyof BlogPost>('title');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const fetchPosts = async () => {
     try {
@@ -139,6 +145,40 @@ const Blog: React.FC = () => {
     }
   };
 
+  const handleRequestSort = (property: keyof BlogPost) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+    if (b[orderBy] < a[orderBy]) {
+      return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+      return 1;
+    }
+    return 0;
+  }
+
+  function getComparator<Key extends keyof any>(order: 'asc' | 'desc', orderBy: Key): (a: { [key in Key]: any }, b: { [key in Key]: any }) => number {
+    return order === 'desc'
+      ? (a, b) => descendingComparator(a, b, orderBy)
+      : (a, b) => -descendingComparator(a, b, orderBy);
+  }
+
+  const sortedPosts = posts.slice().sort(getComparator(order, orderBy));
+  const paginatedPosts = sortedPosts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -167,17 +207,59 @@ const Blog: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Author</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>#</TableCell>
+              <TableCell sortDirection={orderBy === 'title' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'title'}
+                  direction={orderBy === 'title' ? order : 'asc'}
+                  onClick={() => handleRequestSort('title')}
+                >
+                  Title
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'category' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'category'}
+                  direction={orderBy === 'category' ? order : 'asc'}
+                  onClick={() => handleRequestSort('category')}
+                >
+                  Category
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'author' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'author'}
+                  direction={orderBy === 'author' ? order : 'asc'}
+                  onClick={() => handleRequestSort('author')}
+                >
+                  Author
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'date' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'date'}
+                  direction={orderBy === 'date' ? order : 'asc'}
+                  onClick={() => handleRequestSort('date')}
+                >
+                  Date
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'status' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'status'}
+                  direction={orderBy === 'status' ? order : 'asc'}
+                  onClick={() => handleRequestSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {posts.map((post) => (
+            {paginatedPosts.map((post: BlogPost, idx: number) => (
               <TableRow key={post.id}>
+                <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                 <TableCell>{post.title}</TableCell>
                 <TableCell>{post.category}</TableCell>
                 <TableCell>{post.author}</TableCell>
@@ -195,6 +277,15 @@ const Blog: React.FC = () => {
             ))}
           </TableBody>
         </Table>
+        <TablePagination
+          component="div"
+          count={posts.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
       </TableContainer>
 
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
