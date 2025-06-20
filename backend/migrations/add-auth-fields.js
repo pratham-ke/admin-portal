@@ -8,43 +8,29 @@ const { DataTypes } = require('sequelize');
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     try {
-      // Add password reset fields
-      await queryInterface.addColumn('Users', 'resetToken', {
-        type: DataTypes.STRING,
-        allowNull: true,
-      });
+      // Helper to add column if not exists
+      async function addColumnIfNotExists(table, column, options) {
+        const [results] = await queryInterface.sequelize.query(`
+          SELECT COUNT(*) as count FROM INFORMATION_SCHEMA.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '${table}' AND COLUMN_NAME = '${column}'
+        `);
+        if (results[0].count === 0) {
+          await queryInterface.addColumn(table, column, options);
+        }
+      }
 
-      await queryInterface.addColumn('Users', 'resetTokenExpiry', {
-        type: DataTypes.DATE,
-        allowNull: true,
-      });
+      // Add password reset fields
+      await addColumnIfNotExists('Users', 'resetToken', { type: DataTypes.STRING, allowNull: true });
+      await addColumnIfNotExists('Users', 'resetTokenExpiry', { type: DataTypes.DATE, allowNull: true });
 
       // Add email verification fields
-      await queryInterface.addColumn('Users', 'emailVerified', {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      });
-
-      await queryInterface.addColumn('Users', 'emailVerificationToken', {
-        type: DataTypes.STRING,
-        allowNull: true,
-      });
-
-      await queryInterface.addColumn('Users', 'emailVerificationExpiry', {
-        type: DataTypes.DATE,
-        allowNull: true,
-      });
+      await addColumnIfNotExists('Users', 'emailVerified', { type: DataTypes.BOOLEAN, defaultValue: false });
+      await addColumnIfNotExists('Users', 'emailVerificationToken', { type: DataTypes.STRING, allowNull: true });
+      await addColumnIfNotExists('Users', 'emailVerificationExpiry', { type: DataTypes.DATE, allowNull: true });
 
       // Add account status fields
-      await queryInterface.addColumn('Users', 'isActive', {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
-      });
-
-      await queryInterface.addColumn('Users', 'lastLoginAt', {
-        type: DataTypes.DATE,
-        allowNull: true,
-      });
+      await addColumnIfNotExists('Users', 'isActive', { type: DataTypes.BOOLEAN, defaultValue: true });
+      await addColumnIfNotExists('Users', 'lastLoginAt', { type: DataTypes.DATE, allowNull: true });
 
       console.log('✅ Migration completed successfully');
     } catch (error) {

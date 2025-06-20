@@ -46,6 +46,8 @@ interface BlogPost {
   status: 'draft' | 'published';
 }
 
+const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=Blog&background=random&size=48';
+
 const Blog: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -67,6 +69,9 @@ const Blog: React.FC = () => {
   const [orderBy, setOrderBy] = useState<keyof BlogPost>('title');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -86,7 +91,17 @@ const Blog: React.FC = () => {
   const handleOpen = (post?: BlogPost) => {
     if (post) {
       setSelectedPost(post);
-      setFormData(post);
+      let tags: string[] = [];
+      if (Array.isArray(post.tags)) {
+        tags = post.tags;
+      } else if (typeof post.tags === 'string') {
+        tags = (post.tags as string).split(',').map((tag: string) => tag.trim()).filter(Boolean);
+      } else {
+        tags = [];
+      }
+      setFormData({ ...post, tags });
+      setImagePreview(post.image ? `/uploads/blog/${post.image}` : null);
+      setImageFile(null);
     } else {
       setSelectedPost(null);
       setFormData({
@@ -100,6 +115,8 @@ const Blog: React.FC = () => {
         content: '',
         status: 'draft',
       });
+      setImageFile(null);
+      setImagePreview(null);
     }
     setOpen(true);
   };
@@ -109,25 +126,56 @@ const Blog: React.FC = () => {
     setSelectedPost(null);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    if (!formData.title || !formData.description || !formData.category) {
+      setFormError('Title, Description, and Category are required.');
+      return;
+    }
     try {
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'tags' && Array.isArray(value)) {
+          data.append(key, value.join(','));
+        } else if (value !== undefined && value !== null) {
+          data.append(key, value as string);
+        }
+      });
+      if (imageFile) {
+        data.append('image', imageFile);
+      }
       if (selectedPost) {
         await axios.put(
           `http://localhost:5000/api/blog/${selectedPost.id}`,
-          formData,
+          data,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
       } else {
-        await axios.post('http://localhost:5000/api/blog', formData, {
+        await axios.post('http://localhost:5000/api/blog', data, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
       handleClose();
       fetchPosts();
+      setImageFile(null);
+      setImagePreview(null);
     } catch (error) {
+      setFormError('Error saving blog post. Please try again.');
       console.error('Error saving blog post:', error);
     }
   };
@@ -208,6 +256,7 @@ const Blog: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>#</TableCell>
+              <TableCell>Image</TableCell>
               <TableCell sortDirection={orderBy === 'title' ? order : false}>
                 <TableSortLabel
                   active={orderBy === 'title'}
@@ -260,6 +309,16 @@ const Blog: React.FC = () => {
             {paginatedPosts.map((post: BlogPost, idx: number) => (
               <TableRow key={post.id}>
                 <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                <TableCell>
+                  {post.image && (
+                    <img
+                      src={/^https?:\/\//.test(post.image) ? post.image : `http://localhost:5000/uploads/blog/${post.image}`}
+                      alt={post.title}
+                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }}
+                      onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                    />
+                  )}
+                </TableCell>
                 <TableCell>{post.title}</TableCell>
                 <TableCell>{post.category}</TableCell>
                 <TableCell>{post.author}</TableCell>
@@ -292,8 +351,13 @@ const Blog: React.FC = () => {
         <DialogTitle>
           {selectedPost ? 'Edit Blog Post' : 'Add Blog Post'}
         </DialogTitle>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <DialogContent>
+            {formError && (
+              <Box sx={{ mb: 2 }}>
+                <Typography color="error">{formError}</Typography>
+              </Box>
+            )}
             <TextField
               fullWidth
               label="Title"
@@ -313,15 +377,6 @@ const Blog: React.FC = () => {
               }
               margin="normal"
               required
-            />
-            <TextField
-              fullWidth
-              label="Image URL"
-              value={formData.image}
-              onChange={(e) =>
-                setFormData({ ...formData, image: e.target.value })
-              }
-              margin="normal"
             />
             <TextField
               fullWidth
@@ -358,11 +413,11 @@ const Blog: React.FC = () => {
             <TextField
               fullWidth
               label="Tags (comma-separated)"
-              value={formData.tags?.join(', ')}
+              value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  tags: e.target.value.split(',').map((tag) => tag.trim()),
+                  tags: e.target.value.split(',').map((tag) => tag.trim()).filter(Boolean),
                 })
               }
               margin="normal"
@@ -395,6 +450,17 @@ const Blog: React.FC = () => {
                 <MenuItem value="published">Published</MenuItem>
               </Select>
             </FormControl>
+            <Box sx={{ my: 2 }}>
+              <Button variant="contained" component="label">
+                Upload Image
+                <input type="file" accept="image/png, image/jpeg" hidden onChange={handleImageChange} />
+              </Button>
+              {imagePreview && (
+                <Box sx={{ mt: 1 }}>
+                  <img src={imagePreview} alt="Preview" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 8 }} />
+                </Box>
+              )}
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>

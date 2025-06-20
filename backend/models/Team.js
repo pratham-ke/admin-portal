@@ -20,6 +20,7 @@ module.exports = (sequelize) => {
       image: {
         type: DataTypes.STRING,
         allowNull: true,
+        // Stores the filename or relative path of the uploaded image
       },
       bio: {
         type: DataTypes.TEXT,
@@ -44,6 +45,14 @@ module.exports = (sequelize) => {
       status: {
         type: DataTypes.ENUM('active', 'inactive'),
         defaultValue: 'active',
+      },
+      deleted_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      deleted_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
     },
     {

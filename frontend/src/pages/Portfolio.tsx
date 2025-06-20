@@ -46,6 +46,8 @@ interface PortfolioItem {
   status: 'Exit' | 'Active';
 }
 
+const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=Portfolio&background=random&size=48';
+
 const Portfolio: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<PortfolioItem[]>([]);
@@ -66,6 +68,9 @@ const Portfolio: React.FC = () => {
   const [orderBy, setOrderBy] = useState<keyof PortfolioItem>('name');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const fetchItems = async () => {
     try {
@@ -86,6 +91,14 @@ const Portfolio: React.FC = () => {
     if (item) {
       setSelectedItem(item);
       setFormData(item);
+      setImagePreview(
+        isValidImageField(item.image)
+          ? (/^https?:\/\//.test(item.image)
+              ? item.image
+              : `http://localhost:5000/uploads/portfolio/${item.image}`)
+          : null
+      );
+      setImageFile(null);
     } else {
       setSelectedItem(null);
       setFormData({
@@ -98,6 +111,8 @@ const Portfolio: React.FC = () => {
         website: '',
         status: 'Active',
       });
+      setImagePreview(null);
+      setImageFile(null);
     }
     setOpen(true);
   };
@@ -107,25 +122,56 @@ const Portfolio: React.FC = () => {
     setSelectedItem(null);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    if (!formData.name || !formData.description || !formData.category) {
+      setFormError('Name, Description, and Category are required.');
+      return;
+    }
     try {
+      const data = new FormData();
+      data.append('name', formData.name || '');
+      data.append('description', formData.description || '');
+      data.append('overview', formData.overview || '');
+      data.append('category', formData.category || '');
+      data.append('year', String(formData.year || ''));
+      data.append('website', formData.website || '');
+      data.append('status', formData.status || 'Active');
+      if (imageFile) {
+        data.append('image', imageFile);
+      }
       if (selectedItem) {
         await axios.put(
           `http://localhost:5000/api/portfolio/${selectedItem.id}`,
-          formData,
+          data,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
           }
         );
       } else {
-        await axios.post('http://localhost:5000/api/portfolio', formData, {
-          headers: { Authorization: `Bearer ${token}` },
+        await axios.post('http://localhost:5000/api/portfolio', data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
         });
       }
       handleClose();
       fetchItems();
     } catch (error) {
+      setFormError('Error saving portfolio item. Please try again.');
       console.error('Error saving portfolio item:', error);
     }
   };
@@ -177,6 +223,12 @@ const Portfolio: React.FC = () => {
   const sortedItems = items.slice().sort(getComparator(order, orderBy));
   const paginatedItems = sortedItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  function isValidImageField(image: string | undefined): boolean {
+    if (!image) return false;
+    // Accept if it looks like a filename (has an image extension) or is a URL
+    return /\.(jpg|jpeg|png|gif)$/i.test(image) || /^https?:\/\//.test(image);
+  }
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -206,6 +258,7 @@ const Portfolio: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>#</TableCell>
+              <TableCell>Image</TableCell>
               <TableCell sortDirection={orderBy === 'name' ? order : false}>
                 <TableSortLabel
                   active={orderBy === 'name'}
@@ -249,6 +302,22 @@ const Portfolio: React.FC = () => {
             {paginatedItems.map((item: PortfolioItem, idx: number) => (
               <TableRow key={item.id}>
                 <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                <TableCell>
+                  {isValidImageField(item.image) ? (
+                    <img
+                      src={/^https?:\/\//.test(item.image) ? item.image : `http://localhost:5000/uploads/portfolio/${item.image}`}
+                      alt={item.name}
+                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }}
+                      onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                    />
+                  ) : (
+                    <img
+                      src={DEFAULT_IMAGE}
+                      alt={item.name}
+                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }}
+                    />
+                  )}
+                </TableCell>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.category}</TableCell>
                 <TableCell>{item.year}</TableCell>
@@ -280,8 +349,13 @@ const Portfolio: React.FC = () => {
         <DialogTitle>
           {selectedItem ? 'Edit Portfolio Item' : 'Add Portfolio Item'}
         </DialogTitle>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <DialogContent>
+            {formError && (
+              <Box sx={{ mb: 2 }}>
+                <Typography color="error">{formError}</Typography>
+              </Box>
+            )}
             <TextField
               fullWidth
               label="Name"
@@ -313,15 +387,35 @@ const Portfolio: React.FC = () => {
               multiline
               rows={4}
             />
-            <TextField
-              fullWidth
-              label="Image URL"
-              value={formData.image}
-              onChange={(e) =>
-                setFormData({ ...formData, image: e.target.value })
-              }
-              margin="normal"
-            />
+            <Box sx={{ my: 2 }}>
+              <Button
+                variant="outlined"
+                component="label"
+                sx={{ mr: 2 }}
+              >
+                Upload Image
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  hidden
+                  onChange={handleImageChange}
+                />
+              </Button>
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                  onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                />
+              ) : (
+                <img
+                  src={DEFAULT_IMAGE}
+                  alt="Preview"
+                  style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                />
+              )}
+            </Box>
             <TextField
               fullWidth
               label="Category"

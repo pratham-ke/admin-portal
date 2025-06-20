@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const dotenv = require('dotenv');
 const db = require('./models');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -20,6 +21,8 @@ app.use(cors({
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // Request logging middleware (development only)
 if (process.env.NODE_ENV === 'development') {
@@ -45,6 +48,16 @@ app.use('/api/blog', require('./routes/blog'));
 app.use('/api/team', require('./routes/team'));
 app.use('/api/portfolio', require('./routes/portfolio'));
 app.use('/api/users', require('./routes/users'));
+
+// Serve uploads as static files with CORS headers (after all other middleware)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, path) => {
+    res.setHeader('Access-Control-Allow-Origin', frontendOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+}));
 
 // 404 handler for undefined routes
 app.use(notFound);

@@ -34,6 +34,11 @@ module.exports = (sequelize) => {
         type: DataTypes.ENUM('admin', 'user'),
         defaultValue: 'user',
       },
+      image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        // Stores the filename or relative path of the uploaded profile image
+      },
       // Password reset fields
       resetToken: {
         type: DataTypes.STRING,
@@ -65,6 +70,14 @@ module.exports = (sequelize) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+      deleted_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      deleted_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       hooks: {
@@ -81,6 +94,7 @@ module.exports = (sequelize) => {
           }
         },
       },
+      timestamps: true,
     }
   );
 

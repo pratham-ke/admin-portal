@@ -4,12 +4,26 @@ const { User } = require('../models');
 const { auth, adminAuth } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../uploads/user'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
 
 // Get all users (admin only)
 router.get('/', auth, adminAuth, async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: { exclude: ['password'] },
+      where: { deleted_at: null },
     });
     res.json(users);
   } catch (error) {
@@ -21,7 +35,7 @@ router.get('/', auth, adminAuth, async (req, res) => {
 });
 
 // Create new user (admin only)
-router.post('/', auth, adminAuth, async (req, res) => {
+router.post('/', auth, adminAuth, upload.single('image'), async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
 
@@ -39,12 +53,16 @@ router.post('/', auth, adminAuth, async (req, res) => {
     }
 
     // Create new user
-    const user = await User.create({
+    const userData = {
       username,
       email,
       password,
       role: role || 'user',
-    });
+    };
+    if (req.file) {
+      userData.image = req.file.filename;
+    }
+    const user = await User.create(userData);
 
     // Return user without password
     const { password: _, ...userWithoutPassword } = user.toJSON();
@@ -58,7 +76,7 @@ router.post('/', auth, adminAuth, async (req, res) => {
 });
 
 // Update user (admin only)
-router.put('/:id', auth, adminAuth, async (req, res) => {
+router.put('/:id', auth, adminAuth, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
     const { username, email, role } = req.body;
@@ -85,11 +103,11 @@ router.put('/:id', auth, adminAuth, async (req, res) => {
     }
 
     // Update user
-    await user.update({
-      username,
-      email,
-      role,
-    });
+    const updateData = { username, email, role };
+    if (req.file) {
+      updateData.image = req.file.filename;
+    }
+    await user.update(updateData);
 
     // Return updated user without password
     const { password: _, ...userWithoutPassword } = user.toJSON();
@@ -112,11 +130,31 @@ router.delete('/:id', auth, adminAuth, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    await user.destroy();
-    res.json({ message: 'User deleted successfully' });
+    user.deleted_at = new Date();
+    user.deleted_by = req.user.id;
+    await user.save();
+    res.json({ message: 'User deleted successfully (soft delete)' });
   } catch (error) {
     res.status(500).json({
       message: 'Error deleting user',
+      error: error.message,
+    });
+  }
+});
+
+// Toggle user active/inactive status (admin only)
+router.patch('/:id/toggle-active', auth, adminAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    user.isActive = !user.isActive;
+    await user.save();
+    res.json({ id: user.id, isActive: user.isActive });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error toggling user status',
       error: error.message,
     });
   }

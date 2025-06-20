@@ -20,6 +20,7 @@ import {
   Alert,
   TableSortLabel,
   TablePagination,
+  Switch,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -36,7 +37,10 @@ interface User {
   username: string;
   email: string;
   role: 'admin' | 'user';
+  isActive: boolean;
 }
+
+const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=User&background=random&size=40';
 
 const Users: React.FC = () => {
   const navigate = useNavigate();
@@ -55,6 +59,8 @@ const Users: React.FC = () => {
   const [orderBy, setOrderBy] = useState<keyof User>('username');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -80,6 +86,8 @@ const Users: React.FC = () => {
         email: user.email,
         role: user.role,
       });
+      setImagePreview((user as any).image ? `http://localhost:5000/uploads/user/${(user as any).image}` : null);
+      setImageFile(null);
     } else {
       setSelectedUser(null);
       setFormData({
@@ -88,6 +96,8 @@ const Users: React.FC = () => {
         password: '',
         role: 'user',
       });
+      setImagePreview(null);
+      setImageFile(null);
     }
     setOpen(true);
     setError('');
@@ -99,20 +109,44 @@ const Users: React.FC = () => {
     setError('');
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const data = new FormData();
+      data.append('username', formData.username || '');
+      data.append('email', formData.email || '');
+      data.append('role', formData.role || 'user');
+      if (!selectedUser) {
+        data.append('password', formData.password || '');
+      }
+      if (imageFile) {
+        data.append('image', imageFile);
+      }
       if (selectedUser) {
         await axios.put(
           `http://localhost:5000/api/users/${selectedUser.id}`,
-          formData,
+          data,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
           }
         );
       } else {
-        await axios.post('http://localhost:5000/api/users', formData, {
-          headers: { Authorization: `Bearer ${token}` },
+        await axios.post('http://localhost:5000/api/users', data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
         });
       }
       handleClose();
@@ -133,6 +167,17 @@ const Users: React.FC = () => {
         console.error('Error deleting user:', error);
         setError('Failed to delete user');
       }
+    }
+  };
+
+  const handleToggleActive = async (id: number) => {
+    try {
+      await axios.patch(`http://localhost:5000/api/users/${id}/toggle-active`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchUsers();
+    } catch (error) {
+      setError('Failed to toggle user status');
     }
   };
 
@@ -205,6 +250,7 @@ const Users: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>#</TableCell>
+              <TableCell>Profile</TableCell>
               <TableCell sortDirection={orderBy === 'username' ? order : false}>
                 <TableSortLabel
                   active={orderBy === 'username'}
@@ -232,16 +278,35 @@ const Users: React.FC = () => {
                   Role
                 </TableSortLabel>
               </TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedUsers.map((user: User, idx: number) => (
+            {paginatedUsers.map((user: any, idx: number) => (
               <TableRow key={user.id}>
                 <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                <TableCell>
+                  {user.image && (
+                    <img
+                      src={/^https?:\/\//.test(user.image) ? user.image : `http://localhost:5000/uploads/user/${user.image}`}
+                      alt={user.username}
+                      style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%' }}
+                      onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                    />
+                  )}
+                </TableCell>
                 <TableCell>{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  <Switch
+                    checked={user.isActive}
+                    onChange={() => handleToggleActive(user.id)}
+                    color="primary"
+                    inputProps={{ 'aria-label': 'Active/Inactive' }}
+                  />
+                </TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpen(user)}>
                     <EditIcon />
@@ -269,7 +334,7 @@ const Users: React.FC = () => {
         <DialogTitle>
           {selectedUser ? 'Edit User' : 'Add New User'}
         </DialogTitle>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <DialogContent>
             <TextField
               fullWidth
@@ -319,6 +384,28 @@ const Users: React.FC = () => {
               <MenuItem value="user">User</MenuItem>
               <MenuItem value="admin">Admin</MenuItem>
             </TextField>
+            <Box sx={{ my: 2 }}>
+              <Button
+                variant="outlined"
+                component="label"
+                sx={{ mr: 2 }}
+              >
+                Upload Profile Image
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  hidden
+                  onChange={handleImageChange}
+                />
+              </Button>
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%', border: '1px solid #eee' }}
+                />
+              )}
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>

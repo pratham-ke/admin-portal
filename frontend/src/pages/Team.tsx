@@ -43,6 +43,8 @@ interface TeamMember {
   status: 'active' | 'inactive';
 }
 
+const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=Team&background=random&size=48';
+
 const Team: React.FC = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -63,6 +65,8 @@ const Team: React.FC = () => {
   const [orderBy, setOrderBy] = useState<keyof TeamMember>('name');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const fetchMembers = async () => {
     try {
@@ -83,6 +87,8 @@ const Team: React.FC = () => {
     if (member) {
       setSelectedMember(member);
       setFormData(member);
+      setImagePreview(member.image ? `/uploads/team/${member.image}` : null);
+      setImageFile(null);
     } else {
       setSelectedMember(null);
       setFormData({
@@ -95,6 +101,8 @@ const Team: React.FC = () => {
         order: 0,
         status: 'active',
       });
+      setImageFile(null);
+      setImagePreview(null);
     }
     setOpen(true);
   };
@@ -104,24 +112,47 @@ const Team: React.FC = () => {
     setSelectedMember(null);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          data.append(key, value as string);
+        }
+      });
+      if (imageFile) {
+        data.append('image', imageFile);
+      }
       if (selectedMember) {
         await axios.put(
           `http://localhost:5000/api/team/${selectedMember.id}`,
-          formData,
+          data,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
       } else {
-        await axios.post('http://localhost:5000/api/team', formData, {
+        await axios.post('http://localhost:5000/api/team', data, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
       handleClose();
       fetchMembers();
+      setImageFile(null);
+      setImagePreview(null);
     } catch (error) {
       console.error('Error saving team member:', error);
     }
@@ -203,6 +234,7 @@ const Team: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>#</TableCell>
+              <TableCell>Image</TableCell>
               <TableCell sortDirection={orderBy === 'name' ? order : false}>
                 <TableSortLabel
                   active={orderBy === 'name'}
@@ -246,6 +278,16 @@ const Team: React.FC = () => {
             {paginatedMembers.map((member: TeamMember, idx: number) => (
               <TableRow key={member.id}>
                 <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                <TableCell>
+                  {member.image && (
+                    <img
+                      src={/^https?:\/\//.test(member.image) ? member.image : `http://localhost:5000/uploads/team/${member.image}`}
+                      alt={member.name}
+                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }}
+                      onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                    />
+                  )}
+                </TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.position}</TableCell>
                 <TableCell>{member.email}</TableCell>
@@ -282,39 +324,24 @@ const Team: React.FC = () => {
             <TextField
               fullWidth
               label="Name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              value={formData.name ?? ''}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               margin="normal"
               required
             />
             <TextField
               fullWidth
               label="Position"
-              value={formData.position}
-              onChange={(e) =>
-                setFormData({ ...formData, position: e.target.value })
-              }
+              value={formData.position ?? ''}
+              onChange={(e) => setFormData({ ...formData, position: e.target.value })}
               margin="normal"
               required
             />
             <TextField
               fullWidth
-              label="Image URL"
-              value={formData.image}
-              onChange={(e) =>
-                setFormData({ ...formData, image: e.target.value })
-              }
-              margin="normal"
-            />
-            <TextField
-              fullWidth
               label="Bio"
-              value={formData.bio}
-              onChange={(e) =>
-                setFormData({ ...formData, bio: e.target.value })
-              }
+              value={formData.bio ?? ''}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
               margin="normal"
               multiline
               rows={4}
@@ -323,22 +350,29 @@ const Team: React.FC = () => {
               fullWidth
               label="Email"
               type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              value={formData.email ?? ''}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Order"
               type="number"
-              value={formData.order}
-              onChange={(e) =>
-                setFormData({ ...formData, order: parseInt(e.target.value) })
-              }
+              value={formData.order ?? 0}
+              onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
               margin="normal"
             />
+            <Box sx={{ my: 2 }}>
+              <Button variant="contained" component="label">
+                Upload Image
+                <input type="file" accept="image/png, image/jpeg" hidden onChange={handleImageChange} />
+              </Button>
+              {imagePreview && (
+                <Box sx={{ mt: 1 }}>
+                  <img src={imagePreview} alt="Preview" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 8 }} />
+                </Box>
+              )}
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>

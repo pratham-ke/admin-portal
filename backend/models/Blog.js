@@ -20,6 +20,7 @@ module.exports = (sequelize) => {
       image: {
         type: DataTypes.STRING,
         allowNull: true,
+        // Stores the filename or relative path of the uploaded image
       },
       category: {
         type: DataTypes.STRING,
@@ -45,6 +46,14 @@ module.exports = (sequelize) => {
       status: {
         type: DataTypes.ENUM('draft', 'published'),
         defaultValue: 'draft',
+      },
+      deleted_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      deleted_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
     },
     {

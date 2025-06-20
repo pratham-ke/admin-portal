@@ -2,6 +2,19 @@ const express = require('express');
 const router = express.Router();
 const { Portfolio } = require('../models');
 const { auth, adminAuth } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../uploads/portfolio'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
 
 // Get all portfolio items
 router.get('/', auth, async (req, res) => {
@@ -35,9 +48,13 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // Create portfolio item (admin only)
-router.post('/', adminAuth, async (req, res) => {
+router.post('/', adminAuth, upload.single('image'), async (req, res) => {
   try {
-    const item = await Portfolio.create(req.body);
+    const itemData = req.body;
+    if (req.file) {
+      itemData.image = req.file.filename;
+    }
+    const item = await Portfolio.create(itemData);
     res.status(201).json(item);
   } catch (error) {
     res.status(500).json({
@@ -48,13 +65,17 @@ router.post('/', adminAuth, async (req, res) => {
 });
 
 // Update portfolio item (admin only)
-router.put('/:id', adminAuth, async (req, res) => {
+router.put('/:id', adminAuth, upload.single('image'), async (req, res) => {
   try {
     const item = await Portfolio.findByPk(req.params.id);
     if (!item) {
       return res.status(404).json({ message: 'Portfolio item not found' });
     }
-    await item.update(req.body);
+    const updateData = req.body;
+    if (req.file) {
+      updateData.image = req.file.filename;
+    }
+    await item.update(updateData);
     res.json(item);
   } catch (error) {
     res.status(500).json({
