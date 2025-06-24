@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import ImageUpload from '../components/ImageUpload';
 import apiClient from '../services/apiClient';
+import JoditEditor from 'jodit-react';
 
 // --- Embedded Team Service ---
 const teamService = {
@@ -31,12 +32,12 @@ const teamService = {
 const AddTeam: React.FC = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
+  const editor = React.useRef(null);
+  const [bio, setBio] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     position: '',
-    bio: '',
-    // social_links will be handled separately if needed
   });
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -75,7 +76,7 @@ const AddTeam: React.FC = () => {
       data.append('name', formData.name);
       data.append('email', formData.email);
       data.append('position', formData.position);
-      data.append('bio', formData.bio);
+      data.append('bio', bio);
       
       if (imageFile) {
         data.append('image', imageFile);
@@ -152,14 +153,11 @@ const AddTeam: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Biography"
-                  name="bio"
-                  multiline
-                  rows={4}
-                  value={formData.bio}
-                  onChange={handleChange}
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>Biography</Typography>
+                <JoditEditor
+                  ref={editor}
+                  value={bio}
+                  onBlur={newContent => setBio(newContent)}
                 />
               </Grid>
             </Grid>

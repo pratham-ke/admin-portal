@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import ImageUpload from '../components/ImageUpload';
 import apiClient from '../services/apiClient';
+import JoditEditor from 'jodit-react';
 
 // --- Embedded Team Service ---
 const teamService = {
@@ -40,11 +41,12 @@ const EditTeam: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useAuth();
+  const editor = React.useRef(null);
+  const [bio, setBio] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     position: '',
-    bio: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,7 +59,8 @@ const EditTeam: React.FC = () => {
         setLoading(true);
         const response = await teamService.getMember(id!);
         const { name, email, position, bio, image } = response.data;
-        setFormData({ name, email, position, bio });
+        setFormData({ name, email, position });
+        setBio(bio || '');
         if (image) {
             setImagePreview(getImageUrl(image));
         }
@@ -104,7 +107,7 @@ const EditTeam: React.FC = () => {
       data.append('name', formData.name);
       data.append('email', formData.email);
       data.append('position', formData.position);
-      data.append('bio', formData.bio);
+      data.append('bio', bio);
 
       if (imageFile) {
         data.append('image', imageFile);
@@ -189,14 +192,11 @@ const EditTeam: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Biography"
-                  name="bio"
-                  multiline
-                  rows={4}
-                  value={formData.bio}
-                  onChange={handleChange}
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>Biography</Typography>
+                <JoditEditor
+                  ref={editor}
+                  value={bio}
+                  onBlur={newContent => setBio(newContent)}
                 />
               </Grid>
             </Grid>
