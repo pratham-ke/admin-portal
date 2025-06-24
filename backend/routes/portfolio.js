@@ -65,6 +65,10 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     if (req.file) {
       itemData.image = req.file.filename;
     }
+    // Backend validation for required fields
+    if (!itemData.name) {
+      return res.status(400).json({ message: 'Name is required.' });
+    }
     const item = await Portfolio.create(itemData);
     res.status(201).json(item);
   } catch (error) {

@@ -66,6 +66,10 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     if (req.file) {
       blogData.image = req.file.filename;
     }
+    // Backend validation for required fields
+    if (!blogData.title || !blogData.content) {
+      return res.status(400).json({ message: 'Title and content are required.' });
+    }
     const blog = await Blog.create(blogData);
     res.status(201).json(blog);
   } catch (error) {
