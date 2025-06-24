@@ -16,6 +16,17 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Helper function to clean empty strings
+const cleanEmptyStrings = (data) => {
+  const cleaned = { ...data };
+  Object.keys(cleaned).forEach(key => {
+    if (cleaned[key] === '') {
+      cleaned[key] = null;
+    }
+  });
+  return cleaned;
+};
+
 // Get all portfolio items
 router.get('/', auth, async (req, res) => {
   try {
@@ -47,10 +58,10 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Create portfolio item (admin only)
-router.post('/', adminAuth, upload.single('image'), async (req, res) => {
+// Create portfolio item (all authenticated users)
+router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
-    const itemData = req.body;
+    let itemData = cleanEmptyStrings(req.body);
     if (req.file) {
       itemData.image = req.file.filename;
     }
@@ -64,14 +75,14 @@ router.post('/', adminAuth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Update portfolio item (admin only)
-router.put('/:id', adminAuth, upload.single('image'), async (req, res) => {
+// Update portfolio item (all authenticated users)
+router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const item = await Portfolio.findByPk(req.params.id);
     if (!item) {
       return res.status(404).json({ message: 'Portfolio item not found' });
     }
-    const updateData = req.body;
+    let updateData = cleanEmptyStrings(req.body);
     if (req.file) {
       updateData.image = req.file.filename;
     }
@@ -85,8 +96,8 @@ router.put('/:id', adminAuth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Delete portfolio item (admin only)
-router.delete('/:id', adminAuth, async (req, res) => {
+// Delete portfolio item (all authenticated users)
+router.delete('/:id', auth, async (req, res) => {
   try {
     const item = await Portfolio.findByPk(req.params.id);
     if (!item) {
@@ -97,6 +108,24 @@ router.delete('/:id', adminAuth, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: 'Error deleting portfolio item',
+      error: error.message,
+    });
+  }
+});
+
+// Toggle portfolio item Active/Exit status (all authenticated users)
+router.patch('/:id/toggle-status', auth, async (req, res) => {
+  try {
+    const item = await Portfolio.findByPk(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: 'Portfolio item not found' });
+    }
+    item.status = item.status === 'Active' ? 'Exit' : 'Active';
+    await item.save();
+    res.json({ id: item.id, status: item.status });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error toggling portfolio item status',
       error: error.message,
     });
   }

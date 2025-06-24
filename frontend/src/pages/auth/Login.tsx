@@ -201,12 +201,6 @@ const Login: React.FC = () => {
                   Forgot your password?
                 </Link>
               </Typography>
-              <Typography variant="body2">
-                Don't have an account?{' '}
-                <Link component={RouterLink} to="/signup" variant="body2">
-                  Sign up here
-                </Link>
-              </Typography>
             </Box>
           </Box>
         </Paper>

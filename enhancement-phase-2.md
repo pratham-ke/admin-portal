@@ -22,12 +22,18 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 - [ ] Remove Signup functionality from Auth module
 - [ ] Improve Forgot Password to work smoothly with tokenized reset logic (no console error)
 - [x] Remove default validations and add custom form validations site-wide
+- [x] Allow all non-admin users to perform CRUD operations on Team, Blog, and Portfolio modules (except Users module)
+- [x] Restrict Users module (view, edit, delete, add) to admin users only
+- [x] Hide Users module from sidebar for non-admin users
+- [x] Fix dashboard stats: non-admin users see all stats except Users, no 403 error
+- [x] All forms: Optional fields can be left empty or cleared and saved without error (backend and frontend)
+- [x] Convert empty string fields to null in backend before saving (for all modules)
 
 ---
 
 ## 👤 Users Module
 - [x] Add **Active/Inactive** status toggle with backend integration
-- [ ] Hide Users module from non-admin roles
+- [x] Hide Users module from non-admin roles
 - [ ] Action Column:
   - [ ] Eye icon to view details
   - [ ] Three-dot icon with popup: Edit + Delete
@@ -35,11 +41,12 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 - [x] Add profile image upload
 - [ ] Show profile image in user header area
 - [ ] Enable profile image change functionality
+- [x] Only admin can perform CRUD operations on users
 
 ---
 
 ## 🧑‍🤝‍🧑 Team Module
-- [ ] Add **Active/Inactive** toggle with proper backend functionality
+- [x] Add **Active/Inactive** toggle with proper backend functionality
 - [ ] Action Column:
   - [ ] Eye icon to view details
   - [ ] Three-dot menu: Edit + Delete popup
@@ -49,11 +56,13 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
   - [ ] Reorder fields: `Name ➝ Email ➝ other ➝ Bio`
   - [ ] Add HTML formatter in `Bio` field
   - [x] Apply robust custom validations (no default browser validations)
+- [x] All users (admin and non-admin) can add, edit, delete team members
+- [x] Team form: Optional fields can be left empty or cleared and saved
 
 ---
 
 ## 📝 Blog Module
-- [ ] Add **Active/Inactive** toggle fully functional
+- [x] Add **Active/Inactive** (Published/Draft) toggle fully functional
 - [ ] Action Column:
   - [ ] Eye icon to view
   - [ ] Three-dot menu with Edit/Delete popup
@@ -65,11 +74,13 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
   - [ ] Remove `description`, `author`, `tags`
   - [ ] Add `created_by` and `created_at` with datepicker
   - [x] Implement custom validations (no raw/default errors)
+- [x] All users (admin and non-admin) can add, edit, delete blog posts
+- [x] Blog form: Optional fields can be left empty or cleared and saved
 
 ---
 
 ## 💼 Portfolio Module
-- [x] Add **Active/Inactive** toggle
+- [x] Add **Active/Inactive** (Active/Exit) toggle
 - [ ] Action Column:
   - [ ] Eye icon to view
   - [ ] Three-dot popup menu (Edit/Delete)
@@ -79,6 +90,8 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
   - [ ] Add HTML formatter in `Overview` field (last)
   - [ ] Reorder: `Name ➝ Website ➝ Overview`
   - [x] Add robust custom validation
+- [x] All users (admin and non-admin) can add, edit, delete portfolio items
+- [x] Portfolio form: Optional fields can be left empty or cleared and saved
 
 ---
 

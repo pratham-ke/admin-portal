@@ -4,7 +4,6 @@ import { ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout/Layout';
 import Login from './pages/auth/Login';
-import Signup from './pages/auth/Signup';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/Dashboard';
@@ -13,6 +12,9 @@ import Blog from './pages/Blog';
 import Portfolio from './pages/Portfolio';
 import ProtectedRoute from './components/ProtectedRoute';
 import Users from './pages/Users';
+import TeamView from './pages/TeamView';
+import BlogView from './pages/BlogView';
+import PortfolioView from './pages/PortfolioView';
 
 // Create theme
 const theme = createTheme({
@@ -34,7 +36,6 @@ const App: React.FC = () => {
           <Routes>
             {/* Public Auth Routes */}
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             
@@ -95,6 +96,36 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Users />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/team/view/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TeamView />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blog/view/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BlogView />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/portfolio/view/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PortfolioView />
                   </Layout>
                 </ProtectedRoute>
               }

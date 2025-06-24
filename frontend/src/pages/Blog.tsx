@@ -28,10 +28,14 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   ArrowBack as ArrowBackIcon,
+  Visibility as VisibilityIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import Menu from '@mui/material/Menu';
+import MenuItemMui from '@mui/material/MenuItem';
 
 interface BlogPost {
   id: number;
@@ -72,6 +76,8 @@ const Blog: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuPostId, setMenuPostId] = useState<number | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -150,8 +156,11 @@ const Blog: React.FC = () => {
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'tags' && Array.isArray(value)) {
           data.append(key, value.join(','));
-        } else if (value !== undefined && value !== null) {
+        } else if (value !== undefined && value !== null && value !== '') {
           data.append(key, value as string);
+        } else if (value === '') {
+          // Convert empty strings to null for optional fields
+          data.append(key, '');
         }
       });
       if (imageFile) {
@@ -226,6 +235,16 @@ const Blog: React.FC = () => {
 
   const sortedPosts = posts.slice().sort(getComparator(order, orderBy));
   const paginatedPosts = sortedPosts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, postId: number) => {
+    setAnchorEl(event.currentTarget);
+    setMenuPostId(postId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuPostId(null);
+  };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -325,12 +344,36 @@ const Blog: React.FC = () => {
                 <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
                 <TableCell>{post.status}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleOpen(post)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(post.id)}>
-                    <DeleteIcon />
-                  </IconButton>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <IconButton onClick={() => navigate(`/blog/view/${post.id}`)}>
+                      <VisibilityIcon />
+                    </IconButton>
+                    <IconButton onClick={(e) => handleMenuOpen(e, post.id)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && menuPostId === post.id}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItemMui
+                        onClick={() => {
+                          handleMenuClose();
+                          handleOpen(post);
+                        }}
+                      >
+                        <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                      </MenuItemMui>
+                      <MenuItemMui
+                        onClick={() => {
+                          handleMenuClose();
+                          handleDelete(post.id);
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                      </MenuItemMui>
+                    </Menu>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

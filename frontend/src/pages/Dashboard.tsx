@@ -30,12 +30,15 @@ const Dashboard: React.FC = () => {
     portfolio: 0,
     users: 0,
   });
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [teamRes, blogRes, portfolioRes, usersRes] = await Promise.all([
+        const isAdmin = user?.role === 'admin';
+        
+        // Always fetch team, blog, and portfolio stats
+        const [teamRes, blogRes, portfolioRes] = await Promise.all([
           axios.get('http://localhost:5000/api/team', {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -45,16 +48,28 @@ const Dashboard: React.FC = () => {
           axios.get('http://localhost:5000/api/portfolio', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('http://localhost:5000/api/users', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
         ]);
+
+        let usersCount = 0;
+        
+        // Only fetch users stats if user is admin
+        if (isAdmin) {
+          try {
+            const usersRes = await axios.get('http://localhost:5000/api/users', {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            usersCount = usersRes.data.length;
+          } catch (error) {
+            console.error('Error fetching users stats:', error);
+            usersCount = 0;
+          }
+        }
 
         setStats({
           team: teamRes.data.length,
           blog: blogRes.data.length,
           portfolio: portfolioRes.data.length,
-          users: usersRes.data.length,
+          users: usersCount,
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -62,7 +77,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchStats();
-  }, [token]);
+  }, [token, user]);
 
   const StatCard: React.FC<{
     title: string;
@@ -111,13 +126,15 @@ const Dashboard: React.FC = () => {
             icon={<WorkIcon color="primary" />}
           />
         </Grid>
-        <Grid component="div">
-          <StatCard
-            title="Users"
-            value={stats.users}
-            icon={<PersonIcon color="primary" />}
-          />
-        </Grid>
+        {user?.role === 'admin' && (
+          <Grid component="div">
+            <StatCard
+              title="Users"
+              value={stats.users}
+              icon={<PersonIcon color="primary" />}
+            />
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

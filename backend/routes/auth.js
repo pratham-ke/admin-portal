@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { 
-  signup, 
   login, 
   getCurrentUser, 
   forgotPassword, 
@@ -9,13 +8,6 @@ const {
   logout 
 } = require('../controllers/authController');
 const { auth } = require('../middleware/auth');
-
-/**
- * @route   POST /api/auth/signup
- * @desc    Register a new user
- * @access  Public
- */
-router.post('/signup', signup);
 
 /**
  * @route   POST /api/auth/login

@@ -18,12 +18,16 @@ import {
   TextField,
   TableSortLabel,
   TablePagination,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   ArrowBack as ArrowBackIcon,
+  Visibility as VisibilityIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -67,6 +71,8 @@ const Team: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuMemberId, setMenuMemberId] = useState<number | null>(null);
 
   const fetchMembers = async () => {
     try {
@@ -129,8 +135,11 @@ const Team: React.FC = () => {
     try {
       const data = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+        if (value !== undefined && value !== null && value !== '') {
           data.append(key, value as string);
+        } else if (value === '') {
+          // Convert empty strings to null for optional fields
+          data.append(key, '');
         }
       });
       if (imageFile) {
@@ -204,6 +213,22 @@ const Team: React.FC = () => {
 
   const sortedMembers = members.slice().sort(getComparator(order, orderBy));
   const paginatedMembers = sortedMembers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const getImageUrl = (image: string | undefined) => {
+    if (!image) return DEFAULT_IMAGE;
+    if (/^https?:\/\//.test(image)) return image;
+    return `http://localhost:5000/uploads/team/${image}`;
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, memberId: number) => {
+    setAnchorEl(event.currentTarget);
+    setMenuMemberId(memberId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuMemberId(null);
+  };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -281,7 +306,7 @@ const Team: React.FC = () => {
                 <TableCell>
                   {member.image && (
                     <img
-                      src={/^https?:\/\//.test(member.image) ? member.image : `http://localhost:5000/uploads/team/${member.image}`}
+                      src={getImageUrl(member.image)}
                       alt={member.name}
                       style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }}
                       onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
@@ -293,12 +318,34 @@ const Team: React.FC = () => {
                 <TableCell>{member.email}</TableCell>
                 <TableCell>{member.status}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleOpen(member)}>
-                    <EditIcon />
+                  <IconButton onClick={() => navigate(`/team/view/${member.id}`)}>
+                    <VisibilityIcon />
                   </IconButton>
-                  <IconButton onClick={() => handleDelete(member.id)}>
-                    <DeleteIcon />
+                  <IconButton onClick={(e) => handleMenuOpen(e, member.id)}>
+                    <MoreVertIcon />
                   </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl) && menuMemberId === member.id}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                        handleOpen(member);
+                      }}
+                    >
+                      <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                        handleDelete(member.id);
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                    </MenuItem>
+                  </Menu>
                 </TableCell>
               </TableRow>
             ))}

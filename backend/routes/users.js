@@ -18,6 +18,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Helper function to clean empty strings (only for optional fields)
+const cleanEmptyStrings = (data) => {
+  const cleaned = { ...data };
+  Object.keys(cleaned).forEach(key => {
+    // Only clean optional fields, not required ones like username, email, password
+    if (cleaned[key] === '' && ['image'].includes(key)) {
+      cleaned[key] = null;
+    }
+  });
+  return cleaned;
+};
+
 // Get all users (admin only)
 router.get('/', auth, adminAuth, async (req, res) => {
   try {
@@ -103,7 +115,7 @@ router.put('/:id', auth, adminAuth, upload.single('image'), async (req, res) => 
     }
 
     // Update user
-    const updateData = { username, email, role };
+    let updateData = { username, email, role };
     if (req.file) {
       updateData.image = req.file.filename;
     }

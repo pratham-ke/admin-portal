@@ -27,10 +27,14 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   ArrowBack as ArrowBackIcon,
+  Visibility as VisibilityIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import Menu from '@mui/material/Menu';
+import MenuItemMui from '@mui/material/MenuItem';
 
 interface User {
   id: number;
@@ -41,6 +45,12 @@ interface User {
 }
 
 const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=User&background=random&size=40';
+
+const getImageUrl = (image: string | undefined) => {
+  if (!image) return DEFAULT_IMAGE;
+  if (/^https?:\/\//.test(image)) return image;
+  return `http://localhost:5000/uploads/user/${image}`;
+};
 
 const Users: React.FC = () => {
   const navigate = useNavigate();
@@ -61,6 +71,9 @@ const Users: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [expandedUserId, setExpandedUserId] = useState<number | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuUserId, setMenuUserId] = useState<number | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -86,7 +99,7 @@ const Users: React.FC = () => {
         email: user.email,
         role: user.role,
       });
-      setImagePreview((user as any).image ? `http://localhost:5000/uploads/user/${(user as any).image}` : null);
+      setImagePreview((user as any).image ? getImageUrl((user as any).image) : null);
       setImageFile(null);
     } else {
       setSelectedUser(null);
@@ -215,6 +228,20 @@ const Users: React.FC = () => {
   const sortedUsers = users.slice().sort(getComparator(order, orderBy));
   const paginatedUsers = sortedUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const handleExpand = (userId: number) => {
+    setExpandedUserId(expandedUserId === userId ? null : userId);
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, userId: number) => {
+    setAnchorEl(event.currentTarget);
+    setMenuUserId(userId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuUserId(null);
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -284,38 +311,83 @@ const Users: React.FC = () => {
           </TableHead>
           <TableBody>
             {paginatedUsers.map((user: any, idx: number) => (
-              <TableRow key={user.id}>
-                <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                <TableCell>
-                  {user.image && (
-                    <img
-                      src={/^https?:\/\//.test(user.image) ? user.image : `http://localhost:5000/uploads/user/${user.image}`}
-                      alt={user.username}
-                      style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%' }}
-                      onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+              <React.Fragment key={user.id}>
+                <TableRow>
+                  <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                  <TableCell>
+                    {user.image && (
+                      <img
+                        src={getImageUrl(user.image)}
+                        alt={user.username}
+                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%' }}
+                        onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={user.isActive}
+                      onChange={() => handleToggleActive(user.id)}
+                      color="primary"
+                      inputProps={{ 'aria-label': 'Active/Inactive' }}
                     />
-                  )}
-                </TableCell>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>
-                  <Switch
-                    checked={user.isActive}
-                    onChange={() => handleToggleActive(user.id)}
-                    color="primary"
-                    inputProps={{ 'aria-label': 'Active/Inactive' }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleOpen(user)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(user.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleExpand(user.id)}>
+                      <VisibilityIcon color={expandedUserId === user.id ? 'primary' : 'inherit'} />
+                    </IconButton>
+                    <IconButton onClick={(e) => handleMenuOpen(e, user.id)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && menuUserId === user.id}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItemMui
+                        onClick={() => {
+                          handleMenuClose();
+                          handleOpen(user);
+                        }}
+                      >
+                        <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                      </MenuItemMui>
+                      <MenuItemMui
+                        onClick={() => {
+                          handleMenuClose();
+                          handleDelete(user.id);
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                      </MenuItemMui>
+                    </Menu>
+                  </TableCell>
+                </TableRow>
+                {expandedUserId === user.id && (
+                  <TableRow>
+                    <TableCell colSpan={7} sx={{ background: '#f9f9f9' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <img
+                          src={user.image ? getImageUrl(user.image) : DEFAULT_IMAGE}
+                          alt={user.username}
+                          style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '50%' }}
+                          onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                        />
+                        <Box>
+                          <Typography variant="h6">{user.username}</Typography>
+                          <Typography variant="body2">Email: {user.email}</Typography>
+                          <Typography variant="body2">Role: {user.role}</Typography>
+                          <Typography variant="body2">Status: {user.isActive ? 'Active' : 'Inactive'}</Typography>
+                          {/* Add more user details here if needed */}
+                        </Box>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>

@@ -16,6 +16,17 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Helper function to clean empty strings
+const cleanEmptyStrings = (data) => {
+  const cleaned = { ...data };
+  Object.keys(cleaned).forEach(key => {
+    if (cleaned[key] === '') {
+      cleaned[key] = null;
+    }
+  });
+  return cleaned;
+};
+
 // Get all team members
 router.get('/', auth, async (req, res) => {
   try {
@@ -47,10 +58,10 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Create team member (admin only)
-router.post('/', adminAuth, upload.single('image'), async (req, res) => {
+// Create team member (all authenticated users)
+router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
-    const memberData = req.body;
+    let memberData = cleanEmptyStrings(req.body);
     if (req.file) {
       memberData.image = req.file.filename;
     }
@@ -64,14 +75,14 @@ router.post('/', adminAuth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Update team member (admin only)
-router.put('/:id', adminAuth, upload.single('image'), async (req, res) => {
+// Update team member (all authenticated users)
+router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const member = await Team.findByPk(req.params.id);
     if (!member) {
       return res.status(404).json({ message: 'Team member not found' });
     }
-    const updateData = req.body;
+    let updateData = cleanEmptyStrings(req.body);
     if (req.file) {
       updateData.image = req.file.filename;
     }
@@ -85,8 +96,8 @@ router.put('/:id', adminAuth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Delete team member (admin only)
-router.delete('/:id', adminAuth, async (req, res) => {
+// Delete team member (all authenticated users)
+router.delete('/:id', auth, async (req, res) => {
   try {
     const member = await Team.findByPk(req.params.id);
     if (!member) {
@@ -102,7 +113,25 @@ router.delete('/:id', adminAuth, async (req, res) => {
   }
 });
 
-// Image upload endpoint
+// Toggle team member active/inactive status (all authenticated users)
+router.patch('/:id/toggle-status', auth, async (req, res) => {
+  try {
+    const member = await Team.findByPk(req.params.id);
+    if (!member) {
+      return res.status(404).json({ message: 'Team member not found' });
+    }
+    member.status = member.status === 'active' ? 'inactive' : 'active';
+    await member.save();
+    res.json({ id: member.id, status: member.status });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error toggling team member status',
+      error: error.message,
+    });
+  }
+});
+
+// Image upload endpoint (admin only)
 router.post('/upload', adminAuth, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });

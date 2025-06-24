@@ -28,10 +28,14 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   ArrowBack as ArrowBackIcon,
+  Visibility as VisibilityIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import Menu from '@mui/material/Menu';
+import MenuItemMui from '@mui/material/MenuItem';
 
 interface PortfolioItem {
   id: number;
@@ -71,6 +75,8 @@ const Portfolio: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuItemId, setMenuItemId] = useState<number | null>(null);
 
   const fetchItems = async () => {
     try {
@@ -139,13 +145,17 @@ const Portfolio: React.FC = () => {
     }
     try {
       const data = new FormData();
+      // Handle required fields
       data.append('name', formData.name || '');
       data.append('description', formData.description || '');
-      data.append('overview', formData.overview || '');
       data.append('category', formData.category || '');
-      data.append('year', String(formData.year || ''));
-      data.append('website', formData.website || '');
       data.append('status', formData.status || 'Active');
+      
+      // Handle optional fields - convert empty strings to null
+      data.append('overview', formData.overview || '');
+      data.append('year', formData.year ? String(formData.year) : '');
+      data.append('website', formData.website || '');
+      
       if (imageFile) {
         data.append('image', imageFile);
       }
@@ -228,6 +238,16 @@ const Portfolio: React.FC = () => {
     // Accept if it looks like a filename (has an image extension) or is a URL
     return /\.(jpg|jpeg|png|gif)$/i.test(image) || /^https?:\/\//.test(image);
   }
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, itemId: number) => {
+    setAnchorEl(event.currentTarget);
+    setMenuItemId(itemId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuItemId(null);
+  };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -323,12 +343,34 @@ const Portfolio: React.FC = () => {
                 <TableCell>{item.year}</TableCell>
                 <TableCell>{item.status}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleOpen(item)}>
-                    <EditIcon />
+                  <IconButton onClick={() => navigate(`/portfolio/view/${item.id}`)}>
+                    <VisibilityIcon />
                   </IconButton>
-                  <IconButton onClick={() => handleDelete(item.id)}>
-                    <DeleteIcon />
+                  <IconButton onClick={(e) => handleMenuOpen(e, item.id)}>
+                    <MoreVertIcon />
                   </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl) && menuItemId === item.id}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItemMui
+                      onClick={() => {
+                        handleMenuClose();
+                        handleOpen(item);
+                      }}
+                    >
+                      <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                    </MenuItemMui>
+                    <MenuItemMui
+                      onClick={() => {
+                        handleMenuClose();
+                        handleDelete(item.id);
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                    </MenuItemMui>
+                  </Menu>
                 </TableCell>
               </TableRow>
             ))}

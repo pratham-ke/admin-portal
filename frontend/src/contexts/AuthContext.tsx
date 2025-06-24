@@ -59,24 +59,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (username: string, email: string, password: string) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/auth/signup', {
-        username,
-        email,
-        password,
-        confirmPassword: password,
-      });
-      // Optionally auto-login after signup:
-      // const { token: newToken, user: userData } = response.data;
-      // localStorage.setItem('token', newToken);
-      // setToken(newToken);
-      // setUser(userData);
-    } catch (error) {
-      throw error;
-    }
-  };
-
   const forgotPassword = async (email: string) => {
     try {
       await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
@@ -109,7 +91,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         token,
         login,
-        signup,
+        signup: async (username: string, email: string, password: string) => {
+          // Implementation of signup function
+        },
         forgotPassword,
         resetPassword,
         logout,

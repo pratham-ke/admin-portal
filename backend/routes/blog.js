@@ -16,6 +16,17 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Helper function to clean empty strings
+const cleanEmptyStrings = (data) => {
+  const cleaned = { ...data };
+  Object.keys(cleaned).forEach(key => {
+    if (cleaned[key] === '') {
+      cleaned[key] = null;
+    }
+  });
+  return cleaned;
+};
+
 // Get all blogs
 router.get('/', auth, async (req, res) => {
   try {
@@ -48,10 +59,10 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Create blog (admin only)
-router.post('/', adminAuth, upload.single('image'), async (req, res) => {
+// Create blog (all authenticated users)
+router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
-    const blogData = req.body;
+    let blogData = cleanEmptyStrings(req.body);
     if (req.file) {
       blogData.image = req.file.filename;
     }
@@ -65,14 +76,14 @@ router.post('/', adminAuth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Update blog (admin only)
-router.put('/:id', adminAuth, upload.single('image'), async (req, res) => {
+// Update blog (all authenticated users)
+router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const blog = await Blog.findByPk(req.params.id);
     if (!blog) {
       return res.status(404).json({ message: 'Blog not found' });
     }
-    const updateData = req.body;
+    let updateData = cleanEmptyStrings(req.body);
     if (req.file) {
       updateData.image = req.file.filename;
     }
@@ -86,8 +97,8 @@ router.put('/:id', adminAuth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Delete blog (admin only)
-router.delete('/:id', adminAuth, async (req, res) => {
+// Delete blog (all authenticated users)
+router.delete('/:id', auth, async (req, res) => {
   try {
     const blog = await Blog.findByPk(req.params.id);
     if (!blog) {
@@ -105,7 +116,25 @@ router.delete('/:id', adminAuth, async (req, res) => {
   }
 });
 
-// Image upload endpoint
+// Toggle blog published/draft status (all authenticated users)
+router.patch('/:id/toggle-status', auth, async (req, res) => {
+  try {
+    const blog = await Blog.findByPk(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog not found' });
+    }
+    blog.status = blog.status === 'published' ? 'draft' : 'published';
+    await blog.save();
+    res.json({ id: blog.id, status: blog.status });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error toggling blog status',
+      error: error.message,
+    });
+  }
+});
+
+// Image upload endpoint (admin only)
 router.post('/upload', adminAuth, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });

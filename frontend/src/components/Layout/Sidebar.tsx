@@ -32,7 +32,7 @@ const menuItems = [
   { text: 'Team', icon: <TeamIcon />, path: '/team' },
   { text: 'Blog', icon: <BlogIcon />, path: '/blog' },
   { text: 'Portfolio', icon: <PortfolioIcon />, path: '/portfolio' },
-  { text: 'Users', icon: <UserIcon />, path: '/users' },
+  { text: 'Users', icon: <UserIcon />, path: '/users', adminOnly: true },
 ];
 
 interface SidebarProps {
@@ -43,7 +43,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -53,6 +53,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const handleItemClick = (path: string) => {
     navigate(path);
   };
+
+  // Filter menu items based on user role
+  const filteredMenuItems = menuItems.filter(item => {
+    if (item.adminOnly && user?.role !== 'admin') {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <Drawer
@@ -71,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     >
       <Box sx={{ overflow: 'hidden', mt: 8 }}>
         <List>
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Tooltip 
