@@ -11,12 +11,6 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
   Alert,
   TableSortLabel,
   TablePagination,
@@ -24,9 +18,7 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
@@ -42,6 +34,7 @@ interface User {
   email: string;
   role: 'admin' | 'user';
   isActive: boolean;
+  image?: string;
 }
 
 const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=User&background=random&size=40';
@@ -55,22 +48,12 @@ const getImageUrl = (image: string | undefined) => {
 const Users: React.FC = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
-  const [open, setOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<Partial<User & { password: string }>>({
-    username: '',
-    email: '',
-    password: '',
-    role: 'user',
-  });
   const [error, setError] = useState('');
   const { token } = useAuth();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<keyof User>('username');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [expandedUserId, setExpandedUserId] = useState<number | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuUserId, setMenuUserId] = useState<number | null>(null);
@@ -91,85 +74,8 @@ const Users: React.FC = () => {
     fetchUsers();
   }, [token]);
 
-  const handleOpen = (user?: User) => {
-    if (user) {
-      setSelectedUser(user);
-      setFormData({
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      });
-      setImagePreview((user as any).image ? getImageUrl((user as any).image) : null);
-      setImageFile(null);
-    } else {
-      setSelectedUser(null);
-      setFormData({
-        username: '',
-        email: '',
-        password: '',
-        role: 'user',
-      });
-      setImagePreview(null);
-      setImageFile(null);
-    }
-    setOpen(true);
-    setError('');
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedUser(null);
-    setError('');
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const data = new FormData();
-      data.append('username', formData.username || '');
-      data.append('email', formData.email || '');
-      data.append('role', formData.role || 'user');
-      if (!selectedUser) {
-        data.append('password', formData.password || '');
-      }
-      if (imageFile) {
-        data.append('image', imageFile);
-      }
-      if (selectedUser) {
-        await axios.put(
-          `http://localhost:5000/api/users/${selectedUser.id}`,
-          data,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-      } else {
-        await axios.post('http://localhost:5000/api/users', data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-      }
-      handleClose();
-      fetchUsers();
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'An error occurred');
-    }
-  };
-
   const handleDelete = async (id: number) => {
+    handleMenuClose();
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await axios.delete(`http://localhost:5000/api/users/${id}`, {
@@ -219,13 +125,13 @@ const Users: React.FC = () => {
     return 0;
   }
 
-  function getComparator<Key extends keyof any>(order: 'asc' | 'desc', orderBy: Key): (a: { [key in Key]: any }, b: { [key in Key]: any }) => number {
+  function getComparator<Key extends keyof User>(order: 'asc' | 'desc', orderBy: Key): (a: User, b: User) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
-  const sortedUsers = users.slice().sort(getComparator(order, orderBy));
+  const sortedUsers = users.slice().sort((a, b) => getComparator(order, orderBy)(a, b));
   const paginatedUsers = sortedUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleExpand = (userId: number) => {
@@ -242,42 +148,33 @@ const Users: React.FC = () => {
     setMenuUserId(null);
   };
 
+  const handleEdit = (id: number) => {
+    navigate(`/users/edit/${id}`);
+    handleMenuClose();
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4" component="h1">
           User Management
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/dashboard')}
-          >
-            Back
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpen()}
-          >
-            Add New User
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => navigate('/users/add')}
+        >
+          Add User
+        </Button>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} elevation={3}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell>Profile</TableCell>
+              <TableCell />
               <TableCell sortDirection={orderBy === 'username' ? order : false}>
                 <TableSortLabel
                   active={orderBy === 'username'}
@@ -287,42 +184,18 @@ const Users: React.FC = () => {
                   Username
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={orderBy === 'email' ? order : false}>
-                <TableSortLabel
-                  active={orderBy === 'email'}
-                  direction={orderBy === 'email' ? order : 'asc'}
-                  onClick={() => handleRequestSort('email')}
-                >
-                  Email
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={orderBy === 'role' ? order : false}>
-                <TableSortLabel
-                  active={orderBy === 'role'}
-                  direction={orderBy === 'role' ? order : 'asc'}
-                  onClick={() => handleRequestSort('role')}
-                >
-                  Role
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedUsers.map((user: any, idx: number) => (
+            {paginatedUsers.map((user) => (
               <React.Fragment key={user.id}>
-                <TableRow>
-                  <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                <TableRow hover>
                   <TableCell>
-                    {user.image && (
-                      <img
-                        src={getImageUrl(user.image)}
-                        alt={user.username}
-                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%' }}
-                        onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
-                      />
-                    )}
+                    <img src={getImageUrl(user.image)} alt={user.username} style={{ width: 40, height: 40, borderRadius: '50%' }} />
                   </TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
@@ -332,57 +205,34 @@ const Users: React.FC = () => {
                       checked={user.isActive}
                       onChange={() => handleToggleActive(user.id)}
                       color="primary"
-                      inputProps={{ 'aria-label': 'Active/Inactive' }}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="right">
                     <IconButton onClick={() => handleExpand(user.id)}>
-                      <VisibilityIcon color={expandedUserId === user.id ? 'primary' : 'inherit'} />
+                      <VisibilityIcon />
                     </IconButton>
-                    <IconButton onClick={(e) => handleMenuOpen(e, user.id)}>
+                    <IconButton
+                      onClick={(event) => handleMenuOpen(event, user.id)}
+                    >
                       <MoreVertIcon />
                     </IconButton>
                     <Menu
                       anchorEl={anchorEl}
-                      open={Boolean(anchorEl) && menuUserId === user.id}
+                      open={menuUserId === user.id}
                       onClose={handleMenuClose}
                     >
-                      <MenuItemMui
-                        onClick={() => {
-                          handleMenuClose();
-                          handleOpen(user);
-                        }}
-                      >
-                        <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
-                      </MenuItemMui>
-                      <MenuItemMui
-                        onClick={() => {
-                          handleMenuClose();
-                          handleDelete(user.id);
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
-                      </MenuItemMui>
+                      <MenuItemMui onClick={() => handleEdit(user.id)}>Edit</MenuItemMui>
+                      <MenuItemMui onClick={() => handleDelete(user.id)}>Delete</MenuItemMui>
                     </Menu>
                   </TableCell>
                 </TableRow>
                 {expandedUserId === user.id && (
                   <TableRow>
-                    <TableCell colSpan={7} sx={{ background: '#f9f9f9' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <img
-                          src={user.image ? getImageUrl(user.image) : DEFAULT_IMAGE}
-                          alt={user.username}
-                          style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '50%' }}
-                          onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
-                        />
-                        <Box>
-                          <Typography variant="h6">{user.username}</Typography>
-                          <Typography variant="body2">Email: {user.email}</Typography>
-                          <Typography variant="body2">Role: {user.role}</Typography>
-                          <Typography variant="body2">Status: {user.isActive ? 'Active' : 'Inactive'}</Typography>
-                          {/* Add more user details here if needed */}
-                        </Box>
+                    <TableCell colSpan={6}>
+                      <Box sx={{ p: 2 }}>
+                        <Typography variant="h6">User Details</Typography>
+                        <Typography><strong>Email:</strong> {user.email}</Typography>
+                        <Typography><strong>Role:</strong> {user.role}</Typography>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -391,102 +241,16 @@ const Users: React.FC = () => {
             ))}
           </TableBody>
         </Table>
-        <TablePagination
-          component="div"
-          count={users.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-        />
       </TableContainer>
-
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {selectedUser ? 'Edit User' : 'Add New User'}
-        </DialogTitle>
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
-          <DialogContent>
-            <TextField
-              fullWidth
-              label="Username"
-              value={formData.username}
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              margin="normal"
-              required
-            />
-            {!selectedUser && (
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                margin="normal"
-                required
-              />
-            )}
-            <TextField
-              fullWidth
-              select
-              label="Role"
-              value={formData.role}
-              onChange={(e) =>
-                setFormData({ ...formData, role: e.target.value as 'admin' | 'user' })
-              }
-              margin="normal"
-              required
-            >
-              <MenuItem value="user">User</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-            </TextField>
-            <Box sx={{ my: 2 }}>
-              <Button
-                variant="outlined"
-                component="label"
-                sx={{ mr: 2 }}
-              >
-                Upload Profile Image
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  hidden
-                  onChange={handleImageChange}
-                />
-              </Button>
-              {imagePreview && (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%', border: '1px solid #eee' }}
-                />
-              )}
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button type="submit" variant="contained">
-              {selectedUser ? 'Update' : 'Add'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={users.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
     </Box>
   );
 };

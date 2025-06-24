@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
       },
       description: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       overview: {
         type: DataTypes.TEXT,
@@ -33,7 +33,7 @@ module.exports = (sequelize) => {
       },
       category: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       year: {
         type: DataTypes.INTEGER,

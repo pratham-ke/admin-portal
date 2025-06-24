@@ -19,8 +19,8 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 - [x] Display uploaded images inside data tables
 - [x] Implement sorting and pagination in all data tables (no errors)
 - [x] Add serial number/index column in all tables
-- [ ] Remove Signup functionality from Auth module
-- [ ] Improve Forgot Password to work smoothly with tokenized reset logic (no console error)
+- [x] Remove Signup functionality from Auth module
+- [x] Improve Forgot Password to work smoothly with tokenized reset logic (no console error)
 - [x] Remove default validations and add custom form validations site-wide
 - [x] Allow all non-admin users to perform CRUD operations on Team, Blog, and Portfolio modules (except Users module)
 - [x] Restrict Users module (view, edit, delete, add) to admin users only
@@ -34,26 +34,26 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 ## 👤 Users Module
 - [x] Add **Active/Inactive** status toggle with backend integration
 - [x] Hide Users module from non-admin roles
-- [ ] Action Column:
-  - [ ] Eye icon to view details
-  - [ ] Three-dot icon with popup: Edit + Delete
-- [ ] Inline view: show full details on screen (not modal)
+- [x] Action Column:
+  - [x] Eye icon to view details
+  - [x] Three-dot icon with popup: Edit + Delete
+- [x] Inline view: show full details on screen (not modal)
 - [x] Add profile image upload
 - [ ] Show profile image in user header area
-- [ ] Enable profile image change functionality
+- [x] Enable profile image change functionality
 - [x] Only admin can perform CRUD operations on users
 
 ---
 
 ## 🧑‍🤝‍🧑 Team Module
 - [x] Add **Active/Inactive** toggle with proper backend functionality
-- [ ] Action Column:
-  - [ ] Eye icon to view details
-  - [ ] Three-dot menu: Edit + Delete popup
-- [ ] Inline viewing of member details
-- [ ] Add Team Member Form:
-  - [ ] Comment/remove `order` field
-  - [ ] Reorder fields: `Name ➝ Email ➝ other ➝ Bio`
+- [x] Action Column:
+  - [x] Eye icon to view details
+  - [x] Three-dot menu: Edit + Delete popup
+- [x] Inline viewing of member details
+- [x] Add Team Member Form:
+  - [x] Comment/remove `order` field
+  - [x] Reorder fields: `Name ➝ Email ➝ other ➝ Bio`
   - [ ] Add HTML formatter in `Bio` field
   - [x] Apply robust custom validations (no default browser validations)
 - [x] All users (admin and non-admin) can add, edit, delete team members
@@ -63,16 +63,16 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 
 ## 📝 Blog Module
 - [x] Add **Active/Inactive** (Published/Draft) toggle fully functional
-- [ ] Action Column:
-  - [ ] Eye icon to view
-  - [ ] Three-dot menu with Edit/Delete popup
-- [ ] Inline detail view in screen (no modal)
+- [x] Action Column:
+  - [x] Eye icon to view
+  - [x] Three-dot menu with Edit/Delete popup
+- [x] Inline detail view in screen (no modal)
 - [x] Add Blog Form:
   - [x] Remove image URL ➝ add file upload (PNG/JPG)
   - [ ] Add HTML formatter in `Content` field at bottom
-  - [ ] Field Order: `Name ➝ Email ➝ others ➝ Content`
-  - [ ] Remove `description`, `author`, `tags`
-  - [ ] Add `created_by` and `created_at` with datepicker
+  - [x] Field Order: `Name ➝ Email ➝ others ➝ Content`
+  - [x] Remove `description`, `author`, `tags`
+  - [x] Add `created_by` and `created_at` with datepicker
   - [x] Implement custom validations (no raw/default errors)
 - [x] All users (admin and non-admin) can add, edit, delete blog posts
 - [x] Blog form: Optional fields can be left empty or cleared and saved
@@ -81,14 +81,14 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 
 ## 💼 Portfolio Module
 - [x] Add **Active/Inactive** (Active/Exit) toggle
-- [ ] Action Column:
-  - [ ] Eye icon to view
-  - [ ] Three-dot popup menu (Edit/Delete)
-- [ ] Inline project details view
+- [x] Action Column:
+  - [x] Eye icon to view
+  - [x] Three-dot popup menu (Edit/Delete)
+- [x] Inline project details view
 - [x] Add Project Form:
   - [x] Remove image URL ➝ Add file upload
   - [ ] Add HTML formatter in `Overview` field (last)
-  - [ ] Reorder: `Name ➝ Website ➝ Overview`
+  - [x] Reorder: `Name ➝ Website ➝ Overview`
   - [x] Add robust custom validation
 - [x] All users (admin and non-admin) can add, edit, delete portfolio items
 - [x] Portfolio form: Optional fields can be left empty or cleared and saved

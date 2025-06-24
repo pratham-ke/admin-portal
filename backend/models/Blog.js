@@ -15,7 +15,7 @@ module.exports = (sequelize) => {
       },
       description: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       image: {
         type: DataTypes.STRING,
@@ -24,11 +24,11 @@ module.exports = (sequelize) => {
       },
       category: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       author: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       date: {
         type: DataTypes.DATE,

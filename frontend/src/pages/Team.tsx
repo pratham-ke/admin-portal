@@ -11,21 +11,16 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   TableSortLabel,
   TablePagination,
   Menu,
   MenuItem,
+  Switch,
+  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
@@ -38,41 +33,29 @@ interface TeamMember {
   name: string;
   position: string;
   image: string;
-  bio: string;
   email: string;
-  social_links: {
-    [key: string]: string;
-  };
-  order: number;
   status: 'active' | 'inactive';
 }
 
 const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=Team&background=random&size=48';
 
+const getImageUrl = (image: string | undefined) => {
+    if (!image) return DEFAULT_IMAGE;
+    if (/^https?:\/\//.test(image)) return image;
+    return `http://localhost:5000/uploads/team/${image}`;
+};
+
 const Team: React.FC = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState<TeamMember[]>([]);
-  const [open, setOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-  const [formData, setFormData] = useState<Partial<TeamMember>>({
-    name: '',
-    position: '',
-    image: '',
-    bio: '',
-    email: '',
-    social_links: {},
-    order: 0,
-    status: 'active',
-  });
   const { token } = useAuth();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<keyof TeamMember>('name');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuMemberId, setMenuMemberId] = useState<number | null>(null);
+  const [error, setError] = useState('');
 
   const fetchMembers = async () => {
     try {
@@ -82,6 +65,7 @@ const Team: React.FC = () => {
       setMembers(response.data);
     } catch (error) {
       console.error('Error fetching team members:', error);
+      setError('Failed to fetch team members');
     }
   };
 
@@ -89,85 +73,8 @@ const Team: React.FC = () => {
     fetchMembers();
   }, [token]);
 
-  const handleOpen = (member?: TeamMember) => {
-    if (member) {
-      setSelectedMember(member);
-      setFormData(member);
-      setImagePreview(member.image ? `/uploads/team/${member.image}` : null);
-      setImageFile(null);
-    } else {
-      setSelectedMember(null);
-      setFormData({
-        name: '',
-        position: '',
-        image: '',
-        bio: '',
-        email: '',
-        social_links: {},
-        order: 0,
-        status: 'active',
-      });
-      setImageFile(null);
-      setImagePreview(null);
-    }
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedMember(null);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setImageFile(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const data = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          data.append(key, value as string);
-        } else if (value === '') {
-          // Convert empty strings to null for optional fields
-          data.append(key, '');
-        }
-      });
-      if (imageFile) {
-        data.append('image', imageFile);
-      }
-      if (selectedMember) {
-        await axios.put(
-          `http://localhost:5000/api/team/${selectedMember.id}`,
-          data,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      } else {
-        await axios.post('http://localhost:5000/api/team', data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
-      handleClose();
-      fetchMembers();
-      setImageFile(null);
-      setImagePreview(null);
-    } catch (error) {
-      console.error('Error saving team member:', error);
-    }
-  };
-
   const handleDelete = async (id: number) => {
+    handleMenuClose();
     if (window.confirm('Are you sure you want to delete this team member?')) {
       try {
         await axios.delete(`http://localhost:5000/api/team/${id}`, {
@@ -176,7 +83,20 @@ const Team: React.FC = () => {
         fetchMembers();
       } catch (error) {
         console.error('Error deleting team member:', error);
+        setError('Failed to delete team member');
       }
+    }
+  };
+
+  const handleToggleStatus = async (id: number) => {
+    try {
+        await axios.patch(`http://localhost:5000/api/team/${id}/toggle-status`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        fetchMembers();
+    } catch (error) {
+        console.error('Error toggling status:', error);
+        setError('Failed to toggle status');
     }
   };
 
@@ -205,20 +125,14 @@ const Team: React.FC = () => {
     return 0;
   }
 
-  function getComparator<Key extends keyof any>(order: 'asc' | 'desc', orderBy: Key): (a: { [key in Key]: any }, b: { [key in Key]: any }) => number {
+  function getComparator<Key extends keyof TeamMember>(order: 'asc' | 'desc', orderBy: Key): (a: TeamMember, b: TeamMember) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
-  const sortedMembers = members.slice().sort(getComparator(order, orderBy));
+  const sortedMembers = members.slice().sort((a, b) => getComparator(order, orderBy)(a,b));
   const paginatedMembers = sortedMembers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-  const getImageUrl = (image: string | undefined) => {
-    if (!image) return DEFAULT_IMAGE;
-    if (/^https?:\/\//.test(image)) return image;
-    return `http://localhost:5000/uploads/team/${image}`;
-  };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, memberId: number) => {
     setAnchorEl(event.currentTarget);
@@ -230,31 +144,29 @@ const Team: React.FC = () => {
     setMenuMemberId(null);
   };
 
+  const handleEdit = (id: number) => {
+    navigate(`/team/edit/${id}`);
+    handleMenuClose();
+  }
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Team Management
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/dashboard')}
-          >
-            Back
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpen()}
-          >
-            Add Team Member
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => navigate('/team/add')}
+        >
+          Add Member
+        </Button>
       </Box>
 
-      <TableContainer component={Paper}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      <TableContainer component={Paper} elevation={3}>
         <Table>
           <TableHead>
             <TableRow>
@@ -269,166 +181,57 @@ const Team: React.FC = () => {
                   Name
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={orderBy === 'position' ? order : false}>
-                <TableSortLabel
-                  active={orderBy === 'position'}
-                  direction={orderBy === 'position' ? order : 'asc'}
-                  onClick={() => handleRequestSort('position')}
-                >
-                  Position
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={orderBy === 'email' ? order : false}>
-                <TableSortLabel
-                  active={orderBy === 'email'}
-                  direction={orderBy === 'email' ? order : 'asc'}
-                  onClick={() => handleRequestSort('email')}
-                >
-                  Email
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={orderBy === 'status' ? order : false}>
-                <TableSortLabel
-                  active={orderBy === 'status'}
-                  direction={orderBy === 'status' ? order : 'asc'}
-                  onClick={() => handleRequestSort('status')}
-                >
-                  Status
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Position</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedMembers.map((member: TeamMember, idx: number) => (
-              <TableRow key={member.id}>
-                <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+            {paginatedMembers.map((member, index) => (
+              <TableRow key={member.id} hover>
+                <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell>
-                  {member.image && (
-                    <img
-                      src={getImageUrl(member.image)}
-                      alt={member.name}
-                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }}
-                      onError={e => { (e.currentTarget as HTMLImageElement).src = DEFAULT_IMAGE; }}
-                    />
-                  )}
+                    <img src={getImageUrl(member.image)} alt={member.name} style={{ width: 40, height: 40, borderRadius: '50%' }} />
                 </TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.position}</TableCell>
-                <TableCell>{member.email}</TableCell>
-                <TableCell>{member.status}</TableCell>
                 <TableCell>
+                  <Switch
+                    checked={member.status === 'active'}
+                    onChange={() => handleToggleStatus(member.id)}
+                    color="primary"
+                  />
+                </TableCell>
+                <TableCell align="right">
                   <IconButton onClick={() => navigate(`/team/view/${member.id}`)}>
                     <VisibilityIcon />
                   </IconButton>
-                  <IconButton onClick={(e) => handleMenuOpen(e, member.id)}>
+                  <IconButton onClick={(event) => handleMenuOpen(event, member.id)}>
                     <MoreVertIcon />
                   </IconButton>
                   <Menu
                     anchorEl={anchorEl}
-                    open={Boolean(anchorEl) && menuMemberId === member.id}
+                    open={menuMemberId === member.id}
                     onClose={handleMenuClose}
                   >
-                    <MenuItem
-                      onClick={() => {
-                        handleMenuClose();
-                        handleOpen(member);
-                      }}
-                    >
-                      <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        handleMenuClose();
-                        handleDelete(member.id);
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
-                    </MenuItem>
+                    <MenuItem onClick={() => handleEdit(member.id)}>Edit</MenuItem>
+                    <MenuItem onClick={() => handleDelete(member.id)}>Delete</MenuItem>
                   </Menu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        <TablePagination
-          component="div"
-          count={members.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-        />
       </TableContainer>
-
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {selectedMember ? 'Edit Team Member' : 'Add Team Member'}
-        </DialogTitle>
-        <form onSubmit={handleSubmit}>
-          <DialogContent>
-            <TextField
-              fullWidth
-              label="Name"
-              value={formData.name ?? ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Position"
-              value={formData.position ?? ''}
-              onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Bio"
-              value={formData.bio ?? ''}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              margin="normal"
-              multiline
-              rows={4}
-            />
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={formData.email ?? ''}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="Order"
-              type="number"
-              value={formData.order ?? 0}
-              onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-              margin="normal"
-            />
-            <Box sx={{ my: 2 }}>
-              <Button variant="contained" component="label">
-                Upload Image
-                <input type="file" accept="image/png, image/jpeg" hidden onChange={handleImageChange} />
-              </Button>
-              {imagePreview && (
-                <Box sx={{ mt: 1 }}>
-                  <img src={imagePreview} alt="Preview" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 8 }} />
-                </Box>
-              )}
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button type="submit" variant="contained">
-              {selectedMember ? 'Update' : 'Add'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={members.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
     </Box>
   );
 };

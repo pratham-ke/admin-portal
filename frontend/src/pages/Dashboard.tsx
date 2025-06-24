@@ -105,21 +105,21 @@ const Dashboard: React.FC = () => {
         Dashboard
       </Typography>
       <Grid container spacing={3}>
-        <Grid component="div">
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Team Members"
             value={stats.team}
             icon={<PeopleIcon color="primary" />}
           />
         </Grid>
-        <Grid component="div">
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Blog Posts"
             value={stats.blog}
             icon={<ArticleIcon color="primary" />}
           />
         </Grid>
-        <Grid component="div">
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Portfolio Items"
             value={stats.portfolio}
@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
           />
         </Grid>
         {user?.role === 'admin' && (
-          <Grid component="div">
+          <Grid item xs={12} sm={6} md={3}>
             <StatCard
               title="Users"
               value={stats.users}

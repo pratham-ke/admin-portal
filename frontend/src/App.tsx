@@ -15,6 +15,14 @@ import Users from './pages/Users';
 import TeamView from './pages/TeamView';
 import BlogView from './pages/BlogView';
 import PortfolioView from './pages/PortfolioView';
+import AddUser from './pages/AddUser';
+import EditUser from './pages/EditUser';
+import AddTeam from './pages/AddTeam';
+import EditTeam from './pages/EditTeam';
+import AddBlog from './pages/AddBlog';
+import EditBlog from './pages/EditBlog';
+import AddPortfolio from './pages/AddPortfolio';
+import EditPortfolio from './pages/EditPortfolio';
 
 // Create theme
 const theme = createTheme({
@@ -101,6 +109,26 @@ const App: React.FC = () => {
               }
             />
             <Route
+              path="/users/add"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AddUser />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EditUser />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/team/view/:id"
               element={
                 <ProtectedRoute>
@@ -126,6 +154,66 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <PortfolioView />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/team/add"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AddTeam />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/team/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EditTeam />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blog/add"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AddBlog />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blog/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EditBlog />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/portfolio/add"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AddPortfolio />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/portfolio/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EditPortfolio />
                   </Layout>
                 </ProtectedRoute>
               }
