@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, AppBar, Toolbar, Typography, IconButton } from '@mui/material';
+import { Box, AppBar, Toolbar, Typography, IconButton, Avatar } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,6 +14,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleSidebarToggle = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
+  const getImageUrl = (image: string | undefined) => {
+    const DEFAULT_IMAGE = `https://ui-avatars.com/api/?name=${user?.username ?? 'User'}&background=random`;
+    if (!image) return DEFAULT_IMAGE;
+    return `http://localhost:5000/uploads/user/${image}`;
   };
 
   const drawerWidth = 240;
@@ -44,6 +50,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             Admin Portal
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
+          <Avatar 
+            src={getImageUrl(user?.image)} 
+            alt={user?.username} 
+            sx={{ width: 32, height: 32, mr: 1.5 }}
+          />
           <Typography variant="body1" sx={{ mr: 2 }}>
             {user?.username}
           </Typography>
