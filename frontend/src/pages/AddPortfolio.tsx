@@ -15,10 +15,19 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import JoditEditor from 'jodit-react';
+import ImageUpload from '../components/ImageUpload';
+import apiClient from '../services/apiClient';
+
+// --- Embedded Portfolio Service ---
+const portfolioService = {
+  addItem: (data: FormData) => apiClient.post('/portfolio', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+// --------------------------------
 
 const AddPortfolio: React.FC = () => {
   const navigate = useNavigate();
@@ -35,8 +44,7 @@ const AddPortfolio: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
@@ -44,6 +52,9 @@ const AddPortfolio: React.FC = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
     }
   };
 
@@ -73,12 +84,7 @@ const AddPortfolio: React.FC = () => {
         data.append('image', imageFile);
       }
 
-      await axios.post('http://localhost:5000/api/portfolio', data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await portfolioService.addItem(data);
       toast.success('Portfolio item added successfully!');
       navigate('/portfolio');
     } catch (err: any) {
@@ -111,13 +117,12 @@ const AddPortfolio: React.FC = () => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Avatar src={imagePreview || undefined} sx={{ width: 100, height: 100, mb: 2, borderRadius: '4px' }} variant="square" />
-                  <Button variant="contained" component="label">
-                    Upload Project Image
-                    <input type="file" hidden onChange={handleImageChange} accept="image/png, image/jpeg" />
-                  </Button>
-                </Box>
+                <ImageUpload
+                  imagePreview={imagePreview}
+                  onFileChange={handleFileChange}
+                  label="Upload Project Image"
+                  square
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField

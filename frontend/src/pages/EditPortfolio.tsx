@@ -11,15 +11,23 @@ import {
   CardContent,
   CardHeader,
   Divider,
-  Avatar,
   CircularProgress,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import JoditEditor from 'jodit-react';
+import ImageUpload from '../components/ImageUpload';
+import apiClient from '../services/apiClient';
+
+// --- Embedded Portfolio Service ---
+const portfolioService = {
+  getItem: (id: string) => apiClient.get(`/portfolio/${id}`),
+  updateItem: (id: string, data: FormData) => apiClient.put(`/portfolio/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+// --------------------------------
 
 const getImageUrl = (image: string | undefined): string | null => {
     if (!image) return null;
@@ -30,7 +38,6 @@ const getImageUrl = (image: string | undefined): string | null => {
 const EditPortfolio: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { token } = useAuth();
   const editor = useRef(null);
   
   const [formData, setFormData] = useState({
@@ -47,29 +54,27 @@ const EditPortfolio: React.FC = () => {
 
   useEffect(() => {
     const fetchItem = async () => {
+      if (!id) return;
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/portfolio/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await portfolioService.getItem(id);
         const { name, website, category, year, overview, image } = response.data;
         setFormData({ name, website, category, year: year.toString() });
         setOverview(overview);
         if (image) {
             setImagePreview(getImageUrl(image));
         }
-        setLoading(false);
       } catch (err) {
         setError('Failed to fetch portfolio item data.');
         toast.error('Failed to fetch portfolio item data.');
+      } finally {
         setLoading(false);
       }
     };
     fetchItem();
-  }, [id, token]);
+  }, [id]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
@@ -77,6 +82,9 @@ const EditPortfolio: React.FC = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
     }
   };
 
@@ -94,6 +102,12 @@ const EditPortfolio: React.FC = () => {
       return;
     }
 
+    if (!id) {
+      setError('Portfolio item ID is missing.');
+      toast.error('Portfolio item ID is missing.');
+      return;
+    }
+
     try {
       const data = new FormData();
       data.append('name', formData.name);
@@ -105,13 +119,9 @@ const EditPortfolio: React.FC = () => {
       if (imageFile) {
         data.append('image', imageFile);
       }
-
-      await axios.put(`http://localhost:5000/api/portfolio/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      
+      await portfolioService.updateItem(id, data);
+      
       toast.success('Portfolio item updated successfully!');
       navigate('/portfolio');
     } catch (err: any) {
@@ -152,13 +162,12 @@ const EditPortfolio: React.FC = () => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Avatar src={imagePreview || undefined} sx={{ width: 100, height: 100, mb: 2, borderRadius: '4px' }} variant="square" />
-                  <Button variant="contained" component="label">
-                    Change Project Image
-                    <input type="file" hidden onChange={handleImageChange} accept="image/png, image/jpeg" />
-                  </Button>
-                </Box>
+                <ImageUpload
+                  imagePreview={imagePreview}
+                  onFileChange={handleFileChange}
+                  label="Change Project Image"
+                  square
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField

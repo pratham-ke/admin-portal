@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import * as authService from '../services/authService';
 
 interface User {
   id: number;
@@ -33,12 +33,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUser(response.data.user || response.data); // support both {user} and user
+      const userData = await authService.fetchCurrentUser();
+      setUser(userData.user || userData); // support both {user} and user
     } catch (error) {
       logout();
     }
@@ -46,11 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password,
-      });
-      const { token: newToken, user: userData } = response.data;
+      const { token: newToken, user: userData } = await authService.login({ email, password });
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
@@ -61,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const forgotPassword = async (email: string) => {
     try {
-      await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+      await authService.forgotPassword(email);
     } catch (error) {
       throw error;
     }
@@ -69,11 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (token: string, password: string, confirmPassword: string) => {
     try {
-      await axios.post('http://localhost:5000/api/auth/reset-password', {
-        token,
-        password,
-        confirmPassword,
-      });
+      // Assuming confirmPassword is handled in the component
+      await authService.resetPassword(password, token);
     } catch (error) {
       throw error;
     }

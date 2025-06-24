@@ -25,8 +25,16 @@ import {
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import apiClient from '../services/apiClient';
+
+// --- Embedded Team Service ---
+const teamService = {
+  getMembers: () => apiClient.get('/team'),
+  deleteMember: (id: string) => apiClient.delete(`/team/${id}`),
+  toggleMemberStatus: (id: string) => apiClient.patch(`/team/${id}/toggle-status`),
+};
+// -------------------------
 
 interface TeamMember {
   id: number;
@@ -59,9 +67,7 @@ const Team: React.FC = () => {
 
   const fetchMembers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/team', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await teamService.getMembers();
       setMembers(response.data);
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -71,15 +77,13 @@ const Team: React.FC = () => {
 
   useEffect(() => {
     fetchMembers();
-  }, [token]);
+  }, []);
 
   const handleDelete = async (id: number) => {
     handleMenuClose();
     if (window.confirm('Are you sure you want to delete this team member?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/team/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await teamService.deleteMember(String(id));
         fetchMembers();
       } catch (error) {
         console.error('Error deleting team member:', error);
@@ -90,13 +94,16 @@ const Team: React.FC = () => {
 
   const handleToggleStatus = async (id: number) => {
     try {
-        await axios.patch(`http://localhost:5000/api/team/${id}/toggle-status`, {}, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        fetchMembers();
+        await teamService.toggleMemberStatus(String(id));
+        // Optimistic update
+        setMembers(prevMembers =>
+            prevMembers.map(m => (m.id === id ? { ...m, status: m.status === 'active' ? 'inactive' : 'active' } : m))
+        );
     } catch (error) {
         console.error('Error toggling status:', error);
         setError('Failed to toggle status');
+        // Revert on error
+        fetchMembers();
     }
   };
 

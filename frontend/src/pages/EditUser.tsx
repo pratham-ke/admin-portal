@@ -17,9 +17,19 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import ImageUpload from '../components/ImageUpload';
+import apiClient from '../services/apiClient';
+
+// --- Embedded User Service ---
+const userService = {
+  getUser: (id: string) => apiClient.get(`/users/${id}`),
+  updateUser: (id: string, userData: FormData) => apiClient.put(`/users/${id}`, userData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+// -------------------------
 
 const getImageUrl = (image: string | undefined): string | null => {
     if (!image) return null;
@@ -45,9 +55,7 @@ const EditUser: React.FC = () => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await userService.getUser(id!);
         const { username, email, role, image } = response.data;
         setFormData({ username, email, role });
         if (image) {
@@ -63,8 +71,7 @@ const EditUser: React.FC = () => {
     fetchUser();
   }, [id, token]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
@@ -72,6 +79,9 @@ const EditUser: React.FC = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
     }
   };
 
@@ -98,12 +108,7 @@ const EditUser: React.FC = () => {
         data.append('image', imageFile);
       }
 
-      await axios.put(`http://localhost:5000/api/users/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await userService.updateUser(id!, data);
       toast.success('User updated successfully!');
       navigate('/users');
     } catch (err: any) {
@@ -144,13 +149,11 @@ const EditUser: React.FC = () => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Avatar src={imagePreview || undefined} sx={{ width: 100, height: 100, mb: 2 }} />
-                  <Button variant="contained" component="label">
-                    Change Profile Picture
-                    <input type="file" hidden onChange={handleImageChange} accept="image/png, image/jpeg" />
-                  </Button>
-                </Box>
+                <ImageUpload
+                  imagePreview={imagePreview}
+                  onFileChange={handleFileChange}
+                  label="Change Profile Picture"
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField

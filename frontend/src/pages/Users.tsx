@@ -23,10 +23,18 @@ import {
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import Menu from '@mui/material/Menu';
 import MenuItemMui from '@mui/material/MenuItem';
+import apiClient from '../services/apiClient';
+
+// --- Embedded User Service ---
+const userService = {
+  getUsers: () => apiClient.get('/users'),
+  deleteUser: (id: string) => apiClient.delete(`/users/${id}`),
+  toggleUserStatus: (id: string) => apiClient.patch(`/users/${id}/toggle-active`),
+};
+// -------------------------
 
 interface User {
   id: number;
@@ -60,9 +68,7 @@ const Users: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await userService.getUsers();
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -72,15 +78,13 @@ const Users: React.FC = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [token]);
+  }, []);
 
   const handleDelete = async (id: number) => {
     handleMenuClose();
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await userService.deleteUser(String(id));
         fetchUsers();
       } catch (error) {
         console.error('Error deleting user:', error);
@@ -91,12 +95,15 @@ const Users: React.FC = () => {
 
   const handleToggleActive = async (id: number) => {
     try {
-      await axios.patch(`http://localhost:5000/api/users/${id}/toggle-active`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchUsers();
+      await userService.toggleUserStatus(String(id));
+      // Optimistic update
+      setUsers(prevUsers =>
+        prevUsers.map(u => (u.id === id ? { ...u, isActive: !u.isActive } : u))
+      );
     } catch (error) {
       setError('Failed to toggle user status');
+      // Revert optimistic update on error
+      fetchUsers();
     }
   };
 

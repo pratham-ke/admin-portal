@@ -26,8 +26,16 @@ import {
   ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import apiClient from '../services/apiClient';
+
+// --- Embedded Blog Service ---
+const blogService = {
+  getPosts: () => apiClient.get('/blog'),
+  deletePost: (id: string) => apiClient.delete(`/blog/${id}`),
+  togglePostStatus: (id: string) => apiClient.patch(`/blog/${id}/toggle-status`),
+};
+// --------------------------
 
 interface BlogPost {
   id: number;
@@ -59,9 +67,7 @@ const Blog: React.FC = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/blog', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await blogService.getPosts();
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
@@ -79,9 +85,7 @@ const Blog: React.FC = () => {
     handleMenuClose();
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/blog/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await blogService.deletePost(String(id));
         fetchPosts();
       } catch (error) {
         console.error('Error deleting blog post:', error);
@@ -92,13 +96,16 @@ const Blog: React.FC = () => {
 
   const handleToggleStatus = async (id: number) => {
     try {
-      await axios.patch(`http://localhost:5000/api/blog/${id}/toggle-status`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchPosts();
+      await blogService.togglePostStatus(String(id));
+      // Optimistic update
+      setPosts(prevPosts =>
+        prevPosts.map(p => (p.id === id ? { ...p, status: p.status === 'published' ? 'draft' : 'published' } : p))
+      );
     } catch (error) {
         console.error('Error toggling status:', error);
         setError('Failed to toggle status');
+        // Revert on error
+        fetchPosts();
     }
   };
 

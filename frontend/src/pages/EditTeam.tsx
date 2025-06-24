@@ -16,9 +16,19 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import ImageUpload from '../components/ImageUpload';
+import apiClient from '../services/apiClient';
+
+// --- Embedded Team Service ---
+const teamService = {
+  getMember: (id: string) => apiClient.get(`/team/${id}`),
+  updateMember: (id: string, data: FormData) => apiClient.put(`/team/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+// -------------------------
 
 const getImageUrl = (image: string | undefined): string | null => {
     if (!image) return null;
@@ -45,9 +55,7 @@ const EditTeam: React.FC = () => {
     const fetchMember = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/team/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await teamService.getMember(id!);
         const { name, email, position, bio, image } = response.data;
         setFormData({ name, email, position, bio });
         if (image) {
@@ -63,8 +71,7 @@ const EditTeam: React.FC = () => {
     fetchMember();
   }, [id, token]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
@@ -72,6 +79,9 @@ const EditTeam: React.FC = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
     }
   };
 
@@ -100,12 +110,7 @@ const EditTeam: React.FC = () => {
         data.append('image', imageFile);
       }
 
-      await axios.put(`http://localhost:5000/api/team/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await teamService.updateMember(id!, data);
       toast.success('Team member updated successfully!');
       navigate('/team');
     } catch (err: any) {
@@ -146,13 +151,11 @@ const EditTeam: React.FC = () => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Avatar src={imagePreview || undefined} sx={{ width: 100, height: 100, mb: 2 }} />
-                  <Button variant="contained" component="label">
-                    Change Picture
-                    <input type="file" hidden onChange={handleImageChange} accept="image/png, image/jpeg" />
-                  </Button>
-                </Box>
+                <ImageUpload
+                  imagePreview={imagePreview}
+                  onFileChange={handleFileChange}
+                  label="Change Picture"
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField

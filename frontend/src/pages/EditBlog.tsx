@@ -16,10 +16,20 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import JoditEditor from 'jodit-react';
+import ImageUpload from '../components/ImageUpload';
+import apiClient from '../services/apiClient';
+
+// --- Embedded Blog Service ---
+const blogService = {
+  getPost: (id: string) => apiClient.get(`/blog/${id}`),
+  updatePost: (id: string, data: FormData) => apiClient.put(`/blog/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+// --------------------------
 
 const getImageUrl = (image: string | undefined): string | null => {
     if (!image) return null;
@@ -45,11 +55,10 @@ const EditBlog: React.FC = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
+      if (!id) return;
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/blog/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await blogService.getPost(id);
         const { title, category, content, image } = response.data;
         setFormData({ title, category });
         setContent(content);
@@ -66,8 +75,7 @@ const EditBlog: React.FC = () => {
     fetchPost();
   }, [id, token]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
@@ -75,6 +83,9 @@ const EditBlog: React.FC = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
     }
   };
 
@@ -102,12 +113,10 @@ const EditBlog: React.FC = () => {
         data.append('image', imageFile);
       }
 
-      await axios.put(`http://localhost:5000/api/blog/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      if (!id) return;
+
+      await blogService.updatePost(id, data);
+      
       toast.success('Blog post updated successfully!');
       navigate('/blog');
     } catch (err: any) {
@@ -148,13 +157,12 @@ const EditBlog: React.FC = () => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Avatar src={imagePreview || undefined} sx={{ width: 100, height: 100, mb: 2, borderRadius: '4px' }} variant="square" />
-                  <Button variant="contained" component="label">
-                    Change Featured Image
-                    <input type="file" hidden onChange={handleImageChange} accept="image/png, image/jpeg" />
-                  </Button>
-                </Box>
+                <ImageUpload
+                  imagePreview={imagePreview}
+                  onFileChange={handleFileChange}
+                  label="Change Featured Image"
+                  square
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField

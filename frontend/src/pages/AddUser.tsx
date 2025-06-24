@@ -16,9 +16,18 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import ImageUpload from '../components/ImageUpload';
+import apiClient from '../services/apiClient';
+
+// --- Embedded User Service ---
+const userService = {
+  createUser: (userData: FormData) => apiClient.post('/users', userData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+// -------------------------
 
 const AddUser: React.FC = () => {
   const navigate = useNavigate();
@@ -33,8 +42,7 @@ const AddUser: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
@@ -42,6 +50,9 @@ const AddUser: React.FC = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
     }
   };
 
@@ -69,12 +80,7 @@ const AddUser: React.FC = () => {
         data.append('image', imageFile);
       }
 
-      await axios.post('http://localhost:5000/api/users', data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await userService.createUser(data);
       toast.success('User added successfully!');
       navigate('/users');
     } catch (err: any) {
@@ -107,13 +113,11 @@ const AddUser: React.FC = () => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Avatar src={imagePreview || undefined} sx={{ width: 100, height: 100, mb: 2 }} />
-                  <Button variant="contained" component="label">
-                    Upload Profile Picture
-                    <input type="file" hidden onChange={handleImageChange} accept="image/png, image/jpeg" />
-                  </Button>
-                </Box>
+                <ImageUpload
+                  imagePreview={imagePreview}
+                  onFileChange={handleFileChange}
+                  label="Upload Profile Picture"
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField

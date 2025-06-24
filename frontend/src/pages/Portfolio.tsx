@@ -25,8 +25,16 @@ import {
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import apiClient from '../services/apiClient';
+
+// --- Embedded Portfolio Service ---
+const portfolioService = {
+  getItems: () => apiClient.get('/portfolio'),
+  deleteItem: (id: string) => apiClient.delete(`/portfolio/${id}`),
+  toggleItemStatus: (id: string) => apiClient.patch(`/portfolio/${id}/toggle-status`),
+};
+// --------------------------------
 
 interface PortfolioItem {
   id: number;
@@ -58,9 +66,7 @@ const Portfolio: React.FC = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/portfolio', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await portfolioService.getItems();
       setItems(response.data);
     } catch (error) {
       console.error('Error fetching portfolio items:', error);
@@ -70,15 +76,13 @@ const Portfolio: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [token]);
+  }, []);
 
   const handleDelete = async (id: number) => {
     handleMenuClose();
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/portfolio/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await portfolioService.deleteItem(String(id));
         fetchItems();
       } catch (error) {
         console.error('Error deleting item:', error);
@@ -88,14 +92,21 @@ const Portfolio: React.FC = () => {
   };
 
   const handleToggleStatus = async (id: number) => {
+    // Optimistic update
+    const originalItems = [...items];
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.id === id ? { ...item, status: item.status === 'Active' ? 'Exit' : 'Active' } : item
+      )
+    );
+
     try {
-      await axios.patch(`http://localhost:5000/api/portfolio/${id}/toggle-status`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchItems();
+      await portfolioService.toggleItemStatus(String(id));
     } catch (error) {
         console.error('Error toggling status:', error);
         setError('Failed to toggle status');
+        // Revert on error
+        setItems(originalItems);
     }
   };
 
