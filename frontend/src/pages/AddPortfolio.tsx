@@ -115,16 +115,15 @@ const AddPortfolio: React.FC = () => {
           <Divider />
           <CardContent>
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Grid container spacing={3} alignItems="stretch">
+              <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: 500 }}>
                 <ImageUpload
                   imagePreview={imagePreview}
                   onFileChange={handleFileChange}
                   label="Upload Project Image"
+                  avatarSize={180}
                   square
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Project Name"
@@ -132,18 +131,16 @@ const AddPortfolio: React.FC = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
+                  sx={{ mt: 3 }}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Website URL"
                   name="website"
                   value={formData.website}
                   onChange={handleChange}
+                  sx={{ mt: 3 }}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Category"
@@ -151,9 +148,8 @@ const AddPortfolio: React.FC = () => {
                   value={formData.category}
                   onChange={handleChange}
                   required
+                  sx={{ mt: 3 }}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Year"
@@ -161,15 +157,19 @@ const AddPortfolio: React.FC = () => {
                   type="number"
                   value={formData.year}
                   onChange={handleChange}
+                  sx={{ mt: 3 }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={8} sx={{ minHeight: 500, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>Overview</Typography>
-                <JoditEditor
-                  ref={editor}
-                  value={overview}
-                  onBlur={(newContent: string) => setOverview(newContent)}
-                />
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <JoditEditor
+                    ref={editor}
+                    value={overview}
+                    onBlur={(newContent: string) => setOverview(newContent)}
+                    config={{ height: 400 }}
+                  />
+                </Box>
               </Grid>
             </Grid>
           </CardContent>

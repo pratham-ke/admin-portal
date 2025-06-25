@@ -46,6 +46,24 @@ router.get('/', auth, adminAuth, async (req, res) => {
   }
 });
 
+// Get a single user by ID (admin only)
+router.get('/:id', auth, adminAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password'] },
+    });
+    if (!user || user.deleted_at) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error fetching user',
+      error: error.message,
+    });
+  }
+});
+
 // Create new user (admin only)
 router.post('/', auth, adminAuth, upload.single('image'), async (req, res) => {
   try {

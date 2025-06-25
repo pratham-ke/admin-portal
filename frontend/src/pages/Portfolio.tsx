@@ -126,12 +126,15 @@ const Portfolio: React.FC = () => {
   };
 
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-    if (b[orderBy] < a[orderBy]) {
-      return -1;
+    const aValue = a[orderBy];
+    const bValue = b[orderBy];
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return bValue.localeCompare(aValue, undefined, { sensitivity: 'base' });
     }
-    if (b[orderBy] > a[orderBy]) {
-      return 1;
-    }
+    if (bValue == null) return -1;
+    if (aValue == null) return 1;
+    if (bValue < aValue) return -1;
+    if (bValue > aValue) return 1;
     return 0;
   }
 
@@ -191,8 +194,24 @@ const Portfolio: React.FC = () => {
                   Name
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell sortDirection={orderBy === 'category' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'category'}
+                  direction={orderBy === 'category' ? order : 'asc'}
+                  onClick={() => handleRequestSort('category')}
+                >
+                  Category
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'status' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'status'}
+                  direction={orderBy === 'status' ? order : 'asc'}
+                  onClick={() => handleRequestSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>

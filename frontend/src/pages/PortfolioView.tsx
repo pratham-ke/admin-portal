@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, Paper, Button, CircularProgress, Avatar } from '@mui/material';
+import { Box, Typography, Paper, Button, CircularProgress, Avatar, Card, CardHeader, CardContent, Divider } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -42,36 +42,47 @@ const PortfolioView: React.FC = () => {
   if (!item) return null;
 
   return (
-    <Box sx={{ maxWidth: 700, mx: 'auto', mt: 6 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mb: 2 }} variant="outlined">
-          Back
-        </Button>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3, flexWrap: 'wrap' }}>
-          <Avatar
-            src={getImageUrl(item.image)}
-            alt={item.name}
-            sx={{ width: 80, height: 80, fontSize: 32 }}
-          >
-            {item.name?.[0]}
-          </Avatar>
-          <Box>
-            <Typography variant="h5" fontWeight={600}>{item.name}</Typography>
-            <Typography variant="subtitle1" color="text.secondary">{item.category}</Typography>
-            <Typography variant="body2" color="text.secondary">Year: {item.year}</Typography>
-            <Typography variant="body2" color="text.secondary">Status: {item.status}</Typography>
-          </Box>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, width: '100%' }}>
+      <Card component={Paper} elevation={3} sx={{ width: '100%', maxWidth: 1100, mx: 'auto', borderRadius: 3 }}>
+        <CardHeader
+          avatar={
+            <Box sx={{ width: 120, height: 120, mr: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+              <img
+                src={getImageUrl(item.image)}
+                alt={item.name}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent', borderRadius: 8 }}
+              />
+            </Box>
+          }
+          title={<Typography variant="h5" fontWeight={600}>{item.name}</Typography>}
+          subheader={
+            <Box>
+              <Typography variant="subtitle1" color="text.secondary">{item.category}</Typography>
+              <Typography variant="body2" color="text.secondary">Year: {item.year}</Typography>
+              <Typography variant="body2" color="text.secondary">Status: {item.status}</Typography>
+            </Box>
+          }
+          sx={{ pb: 0, alignItems: 'flex-start', mb: 2 }}
+        />
+        <Divider sx={{ mb: 3 }} />
+        <CardContent>
+          {item.overview && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" fontWeight={500}>Overview</Typography>
+              <Box sx={{ color: 'text.secondary' }} dangerouslySetInnerHTML={{ __html: item.overview }} />
+            </Box>
+          )}
+          {item.website && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Website: <a href={item.website} target="_blank" rel="noopener noreferrer">{item.website}</a></Typography>
+          )}
+        </CardContent>
+        <Divider />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} variant="outlined">
+            Back
+          </Button>
         </Box>
-        {item.overview && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2" fontWeight={500}>Overview</Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>{item.overview}</Typography>
-          </Box>
-        )}
-        {item.website && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Website: <a href={item.website} target="_blank" rel="noopener noreferrer">{item.website}</a></Typography>
-        )}
-      </Paper>
+      </Card>
     </Box>
   );
 };

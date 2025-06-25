@@ -39,7 +39,7 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
   - [x] Three-dot icon with popup: Edit + Delete
 - [x] Inline view: show full details on screen (not modal)
 - [x] Add profile image upload
-- [ ] Show profile image in user header area
+- [x] Show profile image in user header area
 - [x] Enable profile image change functionality
 - [x] Only admin can perform CRUD operations on users
 
@@ -54,7 +54,7 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 - [x] Add Team Member Form:
   - [x] Comment/remove `order` field
   - [x] Reorder fields: `Name ➝ Email ➝ other ➝ Bio`
-  - [ ] Add HTML formatter in `Bio` field
+  - [x] Add HTML formatter in `Bio` field
   - [x] Apply robust custom validations (no default browser validations)
 - [x] All users (admin and non-admin) can add, edit, delete team members
 - [x] Team form: Optional fields can be left empty or cleared and saved
@@ -69,7 +69,7 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 - [x] Inline detail view in screen (no modal)
 - [x] Add Blog Form:
   - [x] Remove image URL ➝ add file upload (PNG/JPG)
-  - [ ] Add HTML formatter in `Content` field at bottom
+  - [x] Add HTML formatter in `Content` field at bottom
   - [x] Field Order: `Name ➝ Email ➝ others ➝ Content`
   - [x] Remove `description`, `author`, `tags`
   - [x] Add `created_by` and `created_at` with datepicker
@@ -87,7 +87,7 @@ Update the Admin Portal according to the detailed tasks below. Ensure:
 - [x] Inline project details view
 - [x] Add Project Form:
   - [x] Remove image URL ➝ Add file upload
-  - [ ] Add HTML formatter in `Overview` field (last)
+  - [x] Add HTML formatter in `Overview` field (last)
   - [x] Reorder: `Name ➝ Website ➝ Overview`
   - [x] Add robust custom validation
 - [x] All users (admin and non-admin) can add, edit, delete portfolio items

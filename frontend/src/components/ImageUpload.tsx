@@ -27,7 +27,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Avatar
         src={imagePreview || undefined}
-        sx={{ width: avatarSize, height: avatarSize, mb: 2, borderRadius: square ? '4px' : '50%' }}
+        sx={{ width: avatarSize, height: avatarSize, mb: 2, borderRadius: square ? '4px' : '50%', objectFit: 'cover', backgroundColor: '#f0f0f0' }}
         variant={square ? 'square' : 'circular'}
       />
       <Button variant="contained" component="label">

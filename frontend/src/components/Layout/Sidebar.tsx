@@ -77,10 +77,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         },
       }}
     >
-      <Box sx={{ overflow: 'hidden', mt: 8 }}>
+      {/* Logo Section */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 56,
+          px: 0,
+          py: 0,
+          cursor: 'pointer',
+          width: '100%',
+          background: 'white',
+          borderBottom: '1px solid #eee',
+        }}
+        onClick={() => navigate('/dashboard')}
+      >
+        <img
+          src={process.env.PUBLIC_URL + '/kernel-logo.png'}
+          alt="Kernel Logo"
+          style={{
+            height: 32,
+            width: isCollapsed ? 32 : 100,
+            objectFit: 'contain',
+            transition: 'width 0.3s, height 0.3s',
+            display: 'block'
+          }}
+        />
+      </Box>
+      {/* End Logo Section */}
+      <Box sx={{ overflow: 'hidden', mt: 0 }}>
         <List>
           {filteredMenuItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            // Highlight as active if the current path starts with the item's path
+            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
             return (
               <Tooltip 
                 key={item.path} 

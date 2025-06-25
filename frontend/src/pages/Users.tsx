@@ -123,12 +123,15 @@ const Users: React.FC = () => {
   };
 
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-    if (b[orderBy] < a[orderBy]) {
-      return -1;
+    const aValue = a[orderBy];
+    const bValue = b[orderBy];
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return bValue.localeCompare(aValue, undefined, { sensitivity: 'base' });
     }
-    if (b[orderBy] > a[orderBy]) {
-      return 1;
-    }
+    if (bValue == null) return -1;
+    if (aValue == null) return 1;
+    if (bValue < aValue) return -1;
+    if (bValue > aValue) return 1;
     return 0;
   }
 
@@ -191,9 +194,33 @@ const Users: React.FC = () => {
                   Username
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell sortDirection={orderBy === 'email' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'email'}
+                  direction={orderBy === 'email' ? order : 'asc'}
+                  onClick={() => handleRequestSort('email')}
+                >
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'role' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'role'}
+                  direction={orderBy === 'role' ? order : 'asc'}
+                  onClick={() => handleRequestSort('role')}
+                >
+                  Role
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'isActive' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'isActive'}
+                  direction={orderBy === 'isActive' ? order : 'asc'}
+                  onClick={() => handleRequestSort('isActive')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>

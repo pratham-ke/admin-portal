@@ -125,21 +125,21 @@ const Blog: React.FC = () => {
   };
 
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-    if (b[orderBy] < a[orderBy]) {
-      return -1;
+    const aValue = a[orderBy];
+    const bValue = b[orderBy];
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return bValue.localeCompare(aValue, undefined, { sensitivity: 'base' });
     }
-    if (b[orderBy] > a[orderBy]) {
-      return 1;
-    }
+    if (bValue == null) return -1;
+    if (aValue == null) return 1;
+    if (bValue < aValue) return -1;
+    if (bValue > aValue) return 1;
     return 0;
   }
 
   type Order = 'asc' | 'desc';
 
-  function getComparator<Key extends keyof any>(
-    order: Order,
-    orderBy: Key,
-  ): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
+  function getComparator<Key extends keyof BlogPost>(order: Order, orderBy: Key): (a: BlogPost, b: BlogPost) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
@@ -193,7 +193,8 @@ const Blog: React.FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>#</TableCell>
-                <TableCell>
+                <TableCell>Image</TableCell>
+                <TableCell sortDirection={orderBy === 'title' ? order : false}>
                   <TableSortLabel
                     active={orderBy === 'title'}
                     direction={orderBy === 'title' ? order : 'asc'}
@@ -202,7 +203,7 @@ const Blog: React.FC = () => {
                     Title
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell sortDirection={orderBy === 'category' ? order : false}>
                   <TableSortLabel
                     active={orderBy === 'category'}
                     direction={orderBy === 'category' ? order : 'asc'}
@@ -211,14 +212,13 @@ const Blog: React.FC = () => {
                     Category
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>Image</TableCell>
-                <TableCell>
+                <TableCell sortDirection={orderBy === 'status' ? order : false}>
                   <TableSortLabel
-                     active={orderBy === 'status'}
-                     direction={orderBy === 'status' ? order : 'asc'}
-                     onClick={() => handleRequestSort('status')}
+                    active={orderBy === 'status'}
+                    direction={orderBy === 'status' ? order : 'asc'}
+                    onClick={() => handleRequestSort('status')}
                   >
-                     Status
+                    Status
                   </TableSortLabel>
                 </TableCell>
                 <TableCell>Actions</TableCell>
@@ -228,13 +228,13 @@ const Blog: React.FC = () => {
               {paginatedPosts.map((post, index) => (
                 <TableRow key={post.id}>
                   <TableCell>{page * rowsPerPage + index + 1}</TableCell>
-                  <TableCell>{post.title}</TableCell>
-                  <TableCell>{post.category}</TableCell>
                   <TableCell>
                     <img src={getImageUrl(post.image)} alt={post.title} style={{ width: 48, height: 48, borderRadius: 4, objectFit: 'cover' }} />
                   </TableCell>
+                  <TableCell>{post.title}</TableCell>
+                  <TableCell>{post.category}</TableCell>
                   <TableCell>
-                  <Switch
+                    <Switch
                       checked={post.status === 'published'}
                       onChange={() => handleToggleStatus(post.id)}
                       color="primary"

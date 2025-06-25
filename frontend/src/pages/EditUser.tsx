@@ -147,47 +147,52 @@ const EditUser: React.FC = () => {
           <Divider />
           <CardContent>
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Grid container spacing={3} alignItems="flex-start">
+              <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 220 }}>
                 <ImageUpload
                   imagePreview={imagePreview}
                   onFileChange={handleFileChange}
                   label="Change Profile Picture"
+                  avatarSize={180}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                >
-                  <MenuItem value="admin">Admin</MenuItem>
-                  <MenuItem value="user">User</MenuItem>
-                </TextField>
+              <Grid item xs={12} md={8}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Username"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="Role"
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                    >
+                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="user">User</MenuItem>
+                    </TextField>
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
           </CardContent>

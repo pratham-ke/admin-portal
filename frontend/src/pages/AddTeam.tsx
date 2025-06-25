@@ -113,15 +113,14 @@ const AddTeam: React.FC = () => {
           <Divider />
           <CardContent>
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Grid container spacing={3} alignItems="stretch" sx={{ minHeight: 400, height: '100%' }}>
+              <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: 400, height: '100%' }}>
                 <ImageUpload
                   imagePreview={imagePreview}
                   onFileChange={handleFileChange}
                   label="Upload Picture"
+                  avatarSize={180}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Name"
@@ -129,9 +128,17 @@ const AddTeam: React.FC = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
+                  sx={{ mt: 3 }}
                 />
-              </Grid>
-              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Position"
+                  name="position"
+                  value={formData.position}
+                  onChange={handleChange}
+                  required
+                  sx={{ mt: 3 }}
+                />
                 <TextField
                   fullWidth
                   label="Email"
@@ -140,25 +147,19 @@ const AddTeam: React.FC = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  sx={{ mt: 3 }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Position"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={8} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>Biography</Typography>
-                <JoditEditor
-                  ref={editor}
-                  value={bio}
-                  onBlur={newContent => setBio(newContent)}
-                />
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <JoditEditor
+                    ref={editor}
+                    value={bio}
+                    onBlur={newContent => setBio(newContent)}
+                    config={{ height: 400 }}
+                  />
+                </Box>
               </Grid>
             </Grid>
           </CardContent>
