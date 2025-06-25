@@ -23,10 +23,12 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import apiClient from '../services/apiClient';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 // --- Embedded Portfolio Service ---
 const portfolioService = {
@@ -52,17 +54,28 @@ const getImageUrl = (image: string | undefined) => {
     return `http://localhost:5000/uploads/portfolio/${image}`;
 };
 
+const PORTFOLIO_ROWS_PER_PAGE_KEY = 'portfolioRowsPerPage';
+const PORTFOLIO_PAGE_KEY = 'portfolioPage';
+
 const Portfolio: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const { token } = useAuth();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<keyof PortfolioItem>('name');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(() => {
+    const saved = localStorage.getItem(PORTFOLIO_ROWS_PER_PAGE_KEY);
+    return saved ? parseInt(saved, 10) : 10;
+  });
+  const [page, setPage] = useState(() => {
+    const saved = localStorage.getItem(PORTFOLIO_PAGE_KEY);
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuItemId, setMenuItemId] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
 
   const fetchItems = async () => {
     try {
@@ -78,17 +91,28 @@ const Portfolio: React.FC = () => {
     fetchItems();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteClick = (id: number) => {
+    setDeleteItemId(id);
+    setDeleteDialogOpen(true);
     handleMenuClose();
-    if (window.confirm('Are you sure you want to delete this item?')) {
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteItemId !== null) {
       try {
-        await portfolioService.deleteItem(String(id));
+        await portfolioService.deleteItem(String(deleteItemId));
         fetchItems();
       } catch (error) {
-        console.error('Error deleting item:', error);
         setError('Failed to delete item.');
       }
     }
+    setDeleteDialogOpen(false);
+    setDeleteItemId(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setDeleteItemId(null);
   };
 
   const handleToggleStatus = async (id: number) => {
@@ -118,11 +142,15 @@ const Portfolio: React.FC = () => {
 
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
+    localStorage.setItem(PORTFOLIO_PAGE_KEY, newPage.toString());
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    const value = parseInt(event.target.value, 10);
+    setRowsPerPage(value);
     setPage(0);
+    localStorage.setItem(PORTFOLIO_ROWS_PER_PAGE_KEY, value.toString());
+    localStorage.setItem(PORTFOLIO_PAGE_KEY, '0');
   };
 
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -243,8 +271,12 @@ const Portfolio: React.FC = () => {
                     open={menuItemId === item.id}
                     onClose={handleMenuClose}
                   >
-                    <MenuItemMui onClick={() => handleEdit(item.id)}>Edit</MenuItemMui>
-                    <MenuItemMui onClick={() => handleDelete(item.id)}>Delete</MenuItemMui>
+                    <MenuItemMui onClick={() => handleEdit(item.id)} sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>
+                      <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                    </MenuItemMui>
+                    <MenuItemMui onClick={() => handleDeleteClick(item.id)} sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}>
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                    </MenuItemMui>
                   </Menu>
                 </TableCell>
               </TableRow>
@@ -253,13 +285,21 @@ const Portfolio: React.FC = () => {
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 100]}
         component="div"
         count={items.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete Portfolio Item"
+        description="Are you sure you want to delete this item? This action cannot be undone."
+        confirmButtonText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
       />
     </Box>
   );

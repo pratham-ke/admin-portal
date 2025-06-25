@@ -21,12 +21,14 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Menu from '@mui/material/Menu';
 import MenuItemMui from '@mui/material/MenuItem';
 import apiClient from '../services/apiClient';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 // --- Embedded User Service ---
 const userService = {
@@ -53,6 +55,9 @@ const getImageUrl = (image: string | undefined) => {
   return `http://localhost:5000/uploads/user/${image}`;
 };
 
+const USERS_ROWS_PER_PAGE_KEY = 'usersRowsPerPage';
+const USERS_PAGE_KEY = 'usersPage';
+
 const Users: React.FC = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
@@ -60,11 +65,19 @@ const Users: React.FC = () => {
   const { token } = useAuth();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<keyof User>('username');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(() => {
+    const saved = localStorage.getItem(USERS_ROWS_PER_PAGE_KEY);
+    return saved ? parseInt(saved, 10) : 10;
+  });
+  const [page, setPage] = useState(() => {
+    const saved = localStorage.getItem(USERS_PAGE_KEY);
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [expandedUserId, setExpandedUserId] = useState<number | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuUserId, setMenuUserId] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -80,17 +93,28 @@ const Users: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteClick = (id: number) => {
+    setDeleteUserId(id);
+    setDeleteDialogOpen(true);
     handleMenuClose();
-    if (window.confirm('Are you sure you want to delete this user?')) {
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteUserId !== null) {
       try {
-        await userService.deleteUser(String(id));
+        await userService.deleteUser(String(deleteUserId));
         fetchUsers();
       } catch (error) {
-        console.error('Error deleting user:', error);
         setError('Failed to delete user');
       }
     }
+    setDeleteDialogOpen(false);
+    setDeleteUserId(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setDeleteUserId(null);
   };
 
   const handleToggleActive = async (id: number) => {
@@ -115,11 +139,15 @@ const Users: React.FC = () => {
 
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
+    localStorage.setItem(USERS_PAGE_KEY, newPage.toString());
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    const value = parseInt(event.target.value, 10);
+    setRowsPerPage(value);
     setPage(0);
+    localStorage.setItem(USERS_ROWS_PER_PAGE_KEY, value.toString());
+    localStorage.setItem(USERS_PAGE_KEY, '0');
   };
 
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -255,8 +283,12 @@ const Users: React.FC = () => {
                       open={menuUserId === user.id}
                       onClose={handleMenuClose}
                     >
-                      <MenuItemMui onClick={() => handleEdit(user.id)}>Edit</MenuItemMui>
-                      <MenuItemMui onClick={() => handleDelete(user.id)}>Delete</MenuItemMui>
+                      <MenuItemMui onClick={() => handleEdit(user.id)} sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>
+                        <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                      </MenuItemMui>
+                      <MenuItemMui onClick={() => handleDeleteClick(user.id)} sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}>
+                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                      </MenuItemMui>
                     </Menu>
                   </TableCell>
                 </TableRow>
@@ -277,13 +309,21 @@ const Users: React.FC = () => {
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 100]}
         component="div"
         count={users.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete User"
+        description="Are you sure you want to delete this user? This action cannot be undone."
+        confirmButtonText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
       />
     </Box>
   );

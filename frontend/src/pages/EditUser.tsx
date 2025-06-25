@@ -37,10 +37,15 @@ const getImageUrl = (image: string | undefined): string | null => {
     return `http://localhost:5000/uploads/user/${image}`;
 };
 
-const EditUser: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface EditUserProps {
+  isProfilePage?: boolean;
+}
+
+const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
+  const { id: paramId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const id = isProfilePage ? user?.id?.toString() : paramId;
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -68,7 +73,7 @@ const EditUser: React.FC = () => {
         setLoading(false);
       }
     };
-    fetchUser();
+    if (id) fetchUser();
   }, [id, token]);
 
   const handleFileChange = (file: File | null) => {
@@ -130,15 +135,25 @@ const EditUser: React.FC = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Edit User
+          {isProfilePage ? 'My Profile' : 'Edit User'}
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/users')}
-        >
-          Back to Users
-        </Button>
+        {isProfilePage ? (
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/users')}
+          >
+            Back to Users
+          </Button>
+        )}
       </Box>
 
       <form onSubmit={handleSubmit}>

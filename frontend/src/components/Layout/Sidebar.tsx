@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import ConfirmDialog from '../ConfirmDialog';
 
 const drawerWidth = 240;
 const collapsedDrawerWidth = 64;
@@ -44,10 +45,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuth();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const handleLogout = () => {
+    setLogoutDialogOpen(true);
+  };
+  const handleLogoutConfirm = () => {
+    setLogoutDialogOpen(false);
     logout();
     navigate('/login');
+  };
+  const handleLogoutCancel = () => {
+    setLogoutDialogOpen(false);
   };
 
   const handleItemClick = (path: string) => {
@@ -209,6 +218,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           </Tooltip>
         </List>
       </Box>
+      <ConfirmDialog
+        open={logoutDialogOpen}
+        title="Logout Confirmation"
+        description="Are you sure you want to logout?"
+        confirmButtonText="Logout"
+        onConfirm={handleLogoutConfirm}
+        onCancel={handleLogoutCancel}
+      />
     </Drawer>
   );
 };

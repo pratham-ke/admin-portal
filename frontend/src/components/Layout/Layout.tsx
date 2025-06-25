@@ -3,6 +3,7 @@ import { Box, AppBar, Toolbar, Typography, IconButton, Avatar } from '@mui/mater
 import { Menu as MenuIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user } = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   const handleSidebarToggle = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -53,7 +55,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Avatar 
             src={getImageUrl(user?.image)} 
             alt={user?.username} 
-            sx={{ width: 32, height: 32, mr: 1.5 }}
+            sx={{ width: 32, height: 32, mr: 1.5, cursor: 'pointer' }}
+            onClick={() => navigate('/profile')}
           />
           <Typography variant="body1" sx={{ mr: 2 }}>
             {user?.username}

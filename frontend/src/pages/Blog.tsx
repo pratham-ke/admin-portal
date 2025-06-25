@@ -24,10 +24,12 @@ import {
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
   ArrowBack as ArrowBackIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import apiClient from '../services/apiClient';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 // --- Embedded Blog Service ---
 const blogService = {
@@ -53,17 +55,28 @@ const getImageUrl = (image: string | undefined) => {
     return `http://localhost:5000/uploads/blog/${image}`;
 };
 
+const BLOG_ROWS_PER_PAGE_KEY = 'blogRowsPerPage';
+const BLOG_PAGE_KEY = 'blogPage';
+
 const Blog: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const { token } = useAuth();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<keyof BlogPost>('title');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(() => {
+    const saved = localStorage.getItem(BLOG_ROWS_PER_PAGE_KEY);
+    return saved ? parseInt(saved, 10) : 10;
+  });
+  const [page, setPage] = useState(() => {
+    const saved = localStorage.getItem(BLOG_PAGE_KEY);
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuPostId, setMenuPostId] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePostId, setDeletePostId] = useState<number | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -81,17 +94,28 @@ const Blog: React.FC = () => {
     }
   }, [token]);
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteClick = (id: number) => {
+    setDeletePostId(id);
+    setDeleteDialogOpen(true);
     handleMenuClose();
-    if (window.confirm('Are you sure you want to delete this blog post?')) {
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deletePostId !== null) {
       try {
-        await blogService.deletePost(String(id));
+        await blogService.deletePost(String(deletePostId));
         fetchPosts();
       } catch (error) {
-        console.error('Error deleting blog post:', error);
         setError('Failed to delete blog post.');
       }
     }
+    setDeleteDialogOpen(false);
+    setDeletePostId(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setDeletePostId(null);
   };
 
   const handleToggleStatus = async (id: number) => {
@@ -117,11 +141,15 @@ const Blog: React.FC = () => {
 
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
+    localStorage.setItem(BLOG_PAGE_KEY, newPage.toString());
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    const value = parseInt(event.target.value, 10);
+    setRowsPerPage(value);
     setPage(0);
+    localStorage.setItem(BLOG_ROWS_PER_PAGE_KEY, value.toString());
+    localStorage.setItem(BLOG_PAGE_KEY, '0');
   };
 
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -260,16 +288,15 @@ const Blog: React.FC = () => {
                             navigate(`/blog/edit/${post.id}`);
                             handleMenuClose();
                           }}
+                          sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}
                         >
-                           Edit
+                          <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
                         </MenuItemMui>
                         <MenuItemMui
-                          onClick={() => {
-                            handleDelete(post.id);
-                          }}
-                          sx={{ color: 'error.main' }}
+                          onClick={() => handleDeleteClick(post.id)}
+                          sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}
                         >
-                           Delete
+                          <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
                         </MenuItemMui>
                       </Menu>
                     </Box>
@@ -280,7 +307,7 @@ const Blog: React.FC = () => {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[5, 10, 25, 100]}
           component="div"
           count={posts.length}
           rowsPerPage={rowsPerPage}
@@ -289,6 +316,14 @@ const Blog: React.FC = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete Blog Post"
+        description="Are you sure you want to delete this blog post? This action cannot be undone."
+        confirmButtonText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </Box>
   );
 };
