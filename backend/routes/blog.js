@@ -28,7 +28,7 @@ const cleanEmptyStrings = (data) => {
 };
 
 // Get all blogs
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const blogs = await Blog.findAll({
       order: [['createdAt', 'DESC']],
@@ -44,7 +44,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get single blog
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const blog = await Blog.findByPk(req.params.id);
     if (!blog) {

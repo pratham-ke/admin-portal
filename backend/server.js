@@ -44,9 +44,9 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/blog', require('./routes/blog'));
-app.use('/api/team', require('./routes/team'));
-app.use('/api/portfolio', require('./routes/portfolio'));
+app.use('/api/v1/blogs', require('./routes/blog'));
+app.use('/api/v1/portfolio', require('./routes/portfolio'));
+app.use('/api/v1/team', require('./routes/team'));
 app.use('/api/users', require('./routes/users'));
 
 // Serve uploads as static files with CORS headers (after all other middleware)

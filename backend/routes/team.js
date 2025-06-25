@@ -28,7 +28,7 @@ const cleanEmptyStrings = (data) => {
 };
 
 // Get all team members
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const team = await Team.findAll({
       order: [['order', 'ASC']],
@@ -43,7 +43,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get single team member
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const member = await Team.findByPk(req.params.id);
     if (!member) {

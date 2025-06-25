@@ -28,7 +28,7 @@ const cleanEmptyStrings = (data) => {
 };
 
 // Get all portfolio items
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const portfolio = await Portfolio.findAll({
       order: [['createdAt', 'DESC']],
@@ -43,7 +43,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get single portfolio item
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const item = await Portfolio.findByPk(req.params.id);
     if (!item) {
