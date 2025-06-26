@@ -22,8 +22,8 @@ import apiClient from '../services/apiClient';
 
 // --- Embedded Portfolio Service ---
 const portfolioService = {
-  getItem: (id: string) => apiClient.get(`/portfolio/${id}`),
-  updateItem: (id: string, data: FormData) => apiClient.put(`/portfolio/${id}`, data, {
+  getItem: (id: string) => apiClient.get(`/v1/portfolio/${id}`),
+  updateItem: (id: string, data: FormData) => apiClient.put(`/v1/portfolio/${id}`, data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 };

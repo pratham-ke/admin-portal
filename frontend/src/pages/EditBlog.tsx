@@ -24,8 +24,8 @@ import apiClient from '../services/apiClient';
 
 // --- Embedded Blog Service ---
 const blogService = {
-  getPost: (id: string) => apiClient.get(`/blog/${id}`),
-  updatePost: (id: string, data: FormData) => apiClient.put(`/blog/${id}`, data, {
+  getPost: (id: string) => apiClient.get(`/v1/blogs/${id}`),
+  updatePost: (id: string, data: FormData) => apiClient.put(`/v1/blogs/${id}`, data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 };

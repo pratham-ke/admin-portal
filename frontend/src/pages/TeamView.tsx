@@ -24,7 +24,7 @@ const TeamView: React.FC = () => {
   useEffect(() => {
     const fetchMember = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/team/${id}`, {
+        const response = await axios.get(`http://localhost:5000/api/v1/team/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setMember(response.data);

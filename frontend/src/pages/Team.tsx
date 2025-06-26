@@ -32,9 +32,9 @@ import ConfirmDialog from '../components/ConfirmDialog';
 
 // --- Embedded Team Service ---
 const teamService = {
-  getMembers: () => apiClient.get('/team'),
-  deleteMember: (id: string) => apiClient.delete(`/team/${id}`),
-  toggleMemberStatus: (id: string) => apiClient.patch(`/team/${id}/toggle-status`),
+  getMembers: () => apiClient.get('/v1/team?admin=true'),
+  deleteMember: (id: string) => apiClient.delete(`/v1/team/${id}`),
+  toggleMemberStatus: (id: string) => apiClient.patch(`/v1/team/${id}/toggle-status`),
 };
 // -------------------------
 

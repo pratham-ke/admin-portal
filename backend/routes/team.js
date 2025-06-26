@@ -30,7 +30,13 @@ const cleanEmptyStrings = (data) => {
 // Get all team members
 router.get('/', async (req, res) => {
   try {
+    let where = {};
+    // If ?admin=true and user is authenticated, return all
+    if (!(req.query.admin === 'true' && req.user)) {
+      where.status = 'active';
+    }
     const team = await Team.findAll({
+      where,
       order: [['order', 'ASC']],
     });
     res.json(team);

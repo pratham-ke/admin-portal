@@ -32,9 +32,9 @@ import ConfirmDialog from '../components/ConfirmDialog';
 
 // --- Embedded Portfolio Service ---
 const portfolioService = {
-  getItems: () => apiClient.get('/portfolio'),
-  deleteItem: (id: string) => apiClient.delete(`/portfolio/${id}`),
-  toggleItemStatus: (id: string) => apiClient.patch(`/portfolio/${id}/toggle-status`),
+  getItems: () => apiClient.get('/v1/portfolio?admin=true'),
+  deleteItem: (id: string) => apiClient.delete(`/v1/portfolio/${id}`),
+  toggleItemStatus: (id: string) => apiClient.patch(`/v1/portfolio/${id}/toggle-status`),
 };
 // --------------------------------
 

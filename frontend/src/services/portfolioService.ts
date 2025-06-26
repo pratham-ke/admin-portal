@@ -11,10 +11,10 @@ interface PortfolioFormData {
 
 const portfolioService = {
   getPortfolioItems: () => {
-    return apiClient.get('/portfolio');
+    return apiClient.get('/v1/portfolio');
   },
   getPortfolioItem: (id: string) => {
-    return apiClient.get(`/portfolio/${id}`);
+    return apiClient.get(`/v1/portfolio/${id}`);
   },
   createPortfolioItem: (data: PortfolioFormData) => {
     const formData = new FormData();
@@ -26,7 +26,7 @@ const portfolioService = {
     if (data.image) {
       formData.append('image', data.image);
     }
-    return apiClient.post('/portfolio', formData, {
+    return apiClient.post('/v1/portfolio', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
@@ -40,15 +40,15 @@ const portfolioService = {
     if (data.image) {
       formData.append('image', data.image);
     }
-    return apiClient.put(`/portfolio/${id}`, formData, {
+    return apiClient.put(`/v1/portfolio/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
   deletePortfolioItem: (id: string) => {
-    return apiClient.delete(`/portfolio/${id}`);
+    return apiClient.delete(`/v1/portfolio/${id}`);
   },
   toggleStatus: (id: string) => {
-    return apiClient.patch(`/portfolio/${id}/toggle-status`);
+    return apiClient.patch(`/v1/portfolio/${id}/toggle-status`);
   },
 };
 

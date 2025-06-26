@@ -28,9 +28,15 @@ const cleanEmptyStrings = (data) => {
 };
 
 // Get all portfolio items
-router.get('/', async (req, res) => {
+router.get('/', require('../middleware/auth').authOptional, async (req, res) => {
   try {
+    let where = {};
+    // If ?admin=true and user is authenticated, return all
+    if (!(req.query.admin === 'true' && req.user)) {
+      where.status = 'Active';
+    }
     const portfolio = await Portfolio.findAll({
+      where,
       order: [['createdAt', 'DESC']],
     });
     res.json(portfolio);

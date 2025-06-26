@@ -23,7 +23,7 @@ import apiClient from '../services/apiClient';
 
 // --- Embedded Portfolio Service ---
 const portfolioService = {
-  addItem: (data: FormData) => apiClient.post('/portfolio', data, {
+  addItem: (data: FormData) => apiClient.post('/v1/portfolio', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 };

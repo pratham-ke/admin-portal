@@ -28,11 +28,16 @@ const cleanEmptyStrings = (data) => {
 };
 
 // Get all blogs
-router.get('/', async (req, res) => {
+router.get('/', require('../middleware/auth').authOptional, async (req, res) => {
   try {
+    let where = { deleted_at: null };
+    // If ?admin=true and user is authenticated, return all
+    if (!(req.query.admin === 'true' && req.user)) {
+      where.status = 'published';
+    }
     const blogs = await Blog.findAll({
       order: [['createdAt', 'DESC']],
-      where: { deleted_at: null },
+      where,
     });
     res.json(blogs);
   } catch (error) {

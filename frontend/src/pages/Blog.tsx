@@ -33,9 +33,9 @@ import ConfirmDialog from '../components/ConfirmDialog';
 
 // --- Embedded Blog Service ---
 const blogService = {
-  getPosts: () => apiClient.get('/blog'),
-  deletePost: (id: string) => apiClient.delete(`/blog/${id}`),
-  togglePostStatus: (id: string) => apiClient.patch(`/blog/${id}/toggle-status`),
+  getPosts: () => apiClient.get('/v1/blogs?admin=true'),
+  deletePost: (id: string) => apiClient.delete(`/v1/blogs/${id}`),
+  togglePostStatus: (id: string) => apiClient.patch(`/v1/blogs/${id}/toggle-status`),
 };
 // --------------------------
 

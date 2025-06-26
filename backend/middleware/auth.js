@@ -37,4 +37,25 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-module.exports = { auth, adminAuth }; 
+// Optional authentication middleware
+const authOptional = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return next(); // No token, proceed as guest
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key_here');
+    const user = await User.findByPk(decoded.id);
+    if (user) {
+      req.user = user;
+      req.token = token;
+    }
+    // If user not found, proceed as guest
+    next();
+  } catch (error) {
+    // Invalid token, proceed as guest
+    next();
+  }
+};
+
+module.exports = { auth, adminAuth, authOptional }; 

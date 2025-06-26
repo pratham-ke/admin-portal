@@ -12,9 +12,17 @@ dotenv.config();
 const app = express();
 
 // Security middleware
-app.use(helmet());
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function(origin, callback){
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 
@@ -48,6 +56,11 @@ app.use('/api/v1/blogs', require('./routes/blog'));
 app.use('/api/v1/portfolio', require('./routes/portfolio'));
 app.use('/api/v1/team', require('./routes/team'));
 app.use('/api/users', require('./routes/users'));
+
+// Add these lines to support legacy/non-versioned API routes
+app.use('/api/team', require('./routes/team'));
+app.use('/api/blog', require('./routes/blog'));
+app.use('/api/portfolio', require('./routes/portfolio'));
 
 // Serve uploads as static files with CORS headers (after all other middleware)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {

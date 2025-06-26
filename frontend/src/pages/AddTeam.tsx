@@ -23,7 +23,7 @@ import JoditEditor from 'jodit-react';
 
 // --- Embedded Team Service ---
 const teamService = {
-  createMember: (data: FormData) => apiClient.post('/team', data, {
+  createMember: (data: FormData) => apiClient.post('/v1/team', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 };

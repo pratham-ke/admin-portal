@@ -24,8 +24,8 @@ import JoditEditor from 'jodit-react';
 
 // --- Embedded Team Service ---
 const teamService = {
-  getMember: (id: string) => apiClient.get(`/team/${id}`),
-  updateMember: (id: string, data: FormData) => apiClient.put(`/team/${id}`, data, {
+  getMember: (id: string) => apiClient.get(`/v1/team/${id}`),
+  updateMember: (id: string, data: FormData) => apiClient.put(`/v1/team/${id}`, data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 };

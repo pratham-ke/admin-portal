@@ -13,6 +13,9 @@ You are a **senior-level Cursor AI prompt engineer** tasked with connecting the 
 - [x] Restart backend server to apply changes
 - [x] Test all endpoints using Postman/cURL to confirm public access and correct data
 - [x] Document all endpoints and integration steps
+- [x] Confirm robust error handling and input validation for all endpoints
+- [x] Ensure CORS and security headers are set for public API
+- [x] Validate that all public GET endpoints return correct JSON data and images
 
 ---
 
@@ -29,6 +32,10 @@ You are a **senior-level Cursor AI prompt engineer** tasked with connecting the 
   - [x] `/api/v1/team`
 - [x] **Confirm JSON data is returned** for all public GET requests
 - [x] **Document API endpoints and integration process**
+- [x] **Verify CORS and security headers for all API responses**
+- [x] **Check image serving for all modules (Blog, Portfolio, Team)**
+- [x] **Ensure all endpoints are robust, secure, and production-ready**
+- [x] **Update README and documentation for public API usage**
 
 ---
 

@@ -24,7 +24,7 @@ const BlogView: React.FC = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/blog/${id}`, {
+        const response = await axios.get(`http://localhost:5000/api/v1/blogs/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPost(response.data);

@@ -39,13 +39,13 @@ const Dashboard: React.FC = () => {
         
         // Always fetch team, blog, and portfolio stats
         const [teamRes, blogRes, portfolioRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/team', {
+          axios.get('http://localhost:5000/api/v1/team', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('http://localhost:5000/api/blog', {
+          axios.get('http://localhost:5000/api/v1/blogs', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('http://localhost:5000/api/portfolio', {
+          axios.get('http://localhost:5000/api/v1/portfolio', {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
