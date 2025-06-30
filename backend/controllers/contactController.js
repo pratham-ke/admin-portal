@@ -4,6 +4,7 @@ const { sendContactNotification } = require('../services/emailService');
 const { Op } = require('sequelize');
 const axios = require('axios');
 const crypto = require('crypto');
+const contactService = require('../services/contactService');
 
 // Helper to decrypt settings value
 function decrypt(text) {
@@ -18,37 +19,15 @@ function decrypt(text) {
 
 exports.submitContact = async (req, res) => {
   try {
-    // Validate input
-    const { error } = validateContactSubmission(req.body);
-    if (error) {
-      return res.status(400).json({ success: false, message: 'Validation error', errors: error.details.map(d => d.message) });
-    }
-    // Verify reCAPTCHA
-    const { captchaToken } = req.body;
-    const recaptchaSecret = process.env.RECAPTCHA_SECRET;
-    const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${captchaToken}`);
-    if (!recaptchaRes.data.success) {
-      return res.status(422).json({ success: false, message: 'reCAPTCHA verification failed' });
-    }
-    // Save submission
-    const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    const { firstName, lastName, email, phone, message } = req.body;
-    const submission = await ContactUsSubmission.create({
-      firstName, lastName, email, phone, message, ipAddress,
-      submittedAt: new Date(),
-    });
-    // Notify admins
-    const setting = await Setting.findOne({ where: { key: 'notification_emails' } });
-    let emails = [];
-    if (setting) {
-      const decrypted = decrypt(setting.value);
-      emails = JSON.parse(decrypted);
-    }
-    await sendContactNotification(emails, submission);
-    res.status(201).json({ success: true, message: 'Submission received' });
+    const result = await contactService.submitContact(req.body, req.headers);
+    res.status(201).json(result);
   } catch (error) {
-    console.error('Contact submission error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    if (error.status) {
+      res.status(error.status).json({ success: false, message: error.message, errors: error.details });
+    } else {
+      console.error('Contact submission error:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
   }
 };
 
