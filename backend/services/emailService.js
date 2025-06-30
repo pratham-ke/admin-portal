@@ -179,11 +179,42 @@ const getEmailVerificationTemplate = (verificationUrl) => {
   `;
 };
 
+/**
+ * Send contact form notification to admin emails
+ * @param {string[]} emails - Array of recipient emails
+ * @param {object} submission - ContactUsSubmission instance
+ * @returns {Promise<void>}
+ */
+const sendContactNotification = async (emails, submission) => {
+  if (!emails || emails.length === 0) return;
+  // In production, use Nodemailer or similar
+  const subject = 'New Contact Us Submission';
+  const message = `
+    New contact form submission:
+    Name: ${submission.firstName} ${submission.lastName}
+    Email: ${submission.email}
+    Phone: ${submission.phone || '-'}
+    Message: ${submission.message}
+    Submitted At: ${submission.submittedAt}
+    IP Address: ${submission.ipAddress}
+  `;
+  for (const email of emails) {
+    // Simulate sending
+    console.log('=== CONTACT US NOTIFICATION ===');
+    console.log(`To: ${email}`);
+    console.log(`Subject: ${subject}`);
+    console.log(message);
+    console.log('===============================');
+    await simulateEmailSending(email, null, 'contact');
+  }
+};
+
 module.exports = {
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendEmailVerification,
   getPasswordResetTemplate,
   getWelcomeTemplate,
-  getEmailVerificationTemplate
+  getEmailVerificationTemplate,
+  sendContactNotification,
 }; 

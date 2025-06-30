@@ -28,6 +28,11 @@ import AddBlog from "./pages/AddBlog";
 import EditBlog from "./pages/EditBlog";
 import AddPortfolio from "./pages/AddPortfolio";
 import EditPortfolio from "./pages/EditPortfolio";
+import ContactSubmissions from './pages/ContactSubmissions';
+import ContactSubmissionView from './pages/ContactSubmissionView';
+import NotificationEmails from './pages/NotificationEmails';
+import SettingsPage from './pages/SettingsPage';
+import ChangePasswordPage from './pages/ChangePasswordPage';
 
 // Create theme
 const theme = createTheme({
@@ -233,6 +238,11 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/settings/change-password" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />
+            <Route path="/settings/notification-emails" element={<ProtectedRoute adminOnly><NotificationEmails /></ProtectedRoute>} />
+            <Route path="/contact" element={<ProtectedRoute adminOnly><ContactSubmissions /></ProtectedRoute>} />
+            <Route path="/contact/:id" element={<ProtectedRoute adminOnly><ContactSubmissionView /></ProtectedRoute>} />
           </Routes>
         </Router>
       </AuthProvider>

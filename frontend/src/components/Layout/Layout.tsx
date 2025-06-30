@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Box, AppBar, Toolbar, Typography, IconButton, Avatar } from '@mui/material';
+import { Box, AppBar, Toolbar, Typography, IconButton, Avatar, Menu, MenuItem, ListItemIcon, Divider } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,6 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user } = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleSidebarToggle = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -27,6 +30,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const drawerWidth = 240;
   const collapsedDrawerWidth = 64;
   const currentDrawerWidth = isSidebarCollapsed ? collapsedDrawerWidth : drawerWidth;
+
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleProfileClick = () => {
+    handleProfileMenuClose();
+    navigate('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    handleProfileMenuClose();
+    navigate('/settings');
+  };
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -52,15 +73,39 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             Admin Portal
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton onClick={handleProfileMenuOpen} sx={{ p: 0, mr: 1 }}>
           <Avatar 
             src={getImageUrl(user?.image)} 
             alt={user?.username} 
-            sx={{ width: 32, height: 32, mr: 1.5, cursor: 'pointer' }}
-            onClick={() => navigate('/profile')}
-          />
-          <Typography variant="body1" sx={{ mr: 2 }}>
-            {user?.username}
-          </Typography>
+                sx={{ width: 32, height: 32 }}
+              />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleProfileMenuClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              PaperProps={{
+                sx: {
+                  minWidth: 180,
+                  borderRadius: 2,
+                  boxShadow: 3,
+                  mt: 1,
+                },
+              }}
+            >
+              <MenuItem onClick={handleProfileClick} sx={{ gap: 1 }}>
+                <ListItemIcon><AccountCircleIcon fontSize="small" /></ListItemIcon>
+                Profile
+              </MenuItem>
+              <MenuItem onClick={handleSettingsClick} sx={{ gap: 1 }}>
+                <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+                Settings
+              </MenuItem>
+            </Menu>
+          </Box>
         </Toolbar>
       </AppBar>
       <Sidebar 

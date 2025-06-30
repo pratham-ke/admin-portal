@@ -20,6 +20,8 @@ import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  People as PeopleIcon,
+  Mail as MailIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +35,7 @@ const menuItems = [
   { text: 'Team', icon: <TeamIcon />, path: '/team' },
   { text: 'Blog', icon: <BlogIcon />, path: '/blog' },
   { text: 'Portfolio', icon: <PortfolioIcon />, path: '/portfolio' },
+  { text: 'Contact', icon: <PeopleIcon />, path: '/contact', adminOnly: true },
   { text: 'Users', icon: <UserIcon />, path: '/users', adminOnly: true },
 ];
 

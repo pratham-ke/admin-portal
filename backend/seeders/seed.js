@@ -1,5 +1,6 @@
 const axios = require('axios');
 const db = require('../models');
+const crypto = require('crypto');
 
 const seedDatabase = async () => {
   try {
@@ -92,6 +93,45 @@ const seedDatabase = async () => {
     }));
     await db.Portfolio.bulkCreate(formattedPortfolioData);
     console.log('Portfolio data seeded successfully');
+
+    // Seed contact_us_submissions dummy data
+    await db.ContactUsSubmission.bulkCreate([
+      {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '1234567890',
+        message: 'Hello, this is a test message.',
+        submittedAt: new Date(),
+        ipAddress: '127.0.0.1',
+      },
+      {
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'jane.smith@example.com',
+        phone: '9876543210',
+        message: 'Second test message.',
+        submittedAt: new Date(),
+        ipAddress: '127.0.0.2',
+      },
+    ]);
+    console.log('Contact submissions seeded successfully');
+
+    // Seed settings (notification_emails) dummy data
+    function encrypt(text) {
+      const key = Buffer.from(process.env.SETTINGS_ENCRYPT_KEY || '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+      let encrypted = cipher.update(text);
+      encrypted = Buffer.concat([encrypted, cipher.final()]);
+      return iv.toString('hex') + encrypted.toString('hex');
+    }
+    const emails = ['admin@example.com', 'notify@example.com'];
+    await db.Setting.create({
+      key: 'notification_emails',
+      value: encrypt(JSON.stringify(emails)),
+    });
+    console.log('Notification emails seeded successfully');
 
     console.log('Database seeding completed successfully');
     process.exit(0);

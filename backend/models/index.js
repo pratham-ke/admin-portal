@@ -19,6 +19,8 @@ db.User = require('./User')(sequelize);
 db.Blog = require('./Blog')(sequelize);
 db.Team = require('./Team')(sequelize);
 db.Portfolio = require('./Portfolio')(sequelize);
+db.ContactUsSubmission = require('./ContactUsSubmission')(sequelize);
+db.Setting = require('./Setting')(sequelize);
 
 // Define relationships
 // Add relationships here if needed in the future

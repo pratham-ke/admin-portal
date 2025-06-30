@@ -56,11 +56,11 @@ app.use('/api/v1/blogs', require('./routes/blog'));
 app.use('/api/v1/portfolio', require('./routes/portfolio'));
 app.use('/api/v1/team', require('./routes/team'));
 app.use('/api/users', require('./routes/users'));
-
-// Add these lines to support legacy/non-versioned API routes
 app.use('/api/team', require('./routes/team'));
 app.use('/api/blog', require('./routes/blog'));
 app.use('/api/portfolio', require('./routes/portfolio'));
+app.use('/api/contact', require('./routes/contact'));
+app.use('/api/settings', require('./routes/settings'));
 
 // Serve uploads as static files with CORS headers (after all other middleware)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
