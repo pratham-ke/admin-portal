@@ -3,6 +3,22 @@
  * In production, you would use services like SendGrid, AWS SES, or Nodemailer
  */
 
+const nodemailer = require('nodemailer');
+
+// Modular transporter setup
+let transporter = null;
+if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
+
 /**
  * Send password reset email
  * @param {string} email - User's email address
@@ -187,25 +203,43 @@ const getEmailVerificationTemplate = (verificationUrl) => {
  */
 const sendContactNotification = async (emails, submission) => {
   if (!emails || emails.length === 0) return;
-  // In production, use Nodemailer or similar
   const subject = 'New Contact Us Submission';
   const message = `
-    New contact form submission:
-    Name: ${submission.firstName} ${submission.lastName}
-    Email: ${submission.email}
-    Phone: ${submission.phone || '-'}
-    Message: ${submission.message}
-    Submitted At: ${submission.submittedAt}
-    IP Address: ${submission.ipAddress}
+    New contact form submission:\n
+    Name: ${submission.firstName} ${submission.lastName}\n
+    Email: ${submission.email}\n
+    Phone: ${submission.phone || '-'}\n
+    Message: ${submission.message}\n
+    Submitted At: ${submission.submittedAt}\n
+    IP Address: ${submission.ipAddress}\n
+  `;
+  const html = `
+    <h2>New Contact Us Submission</h2>
+    <p><strong>Name:</strong> ${submission.firstName} ${submission.lastName}</p>
+    <p><strong>Email:</strong> ${submission.email}</p>
+    <p><strong>Phone:</strong> ${submission.phone || '-'}</p>
+    <p><strong>Message:</strong><br/>${submission.message}</p>
+    <p><strong>Submitted At:</strong> ${submission.submittedAt}</p>
+    <p><strong>IP Address:</strong> ${submission.ipAddress}</p>
   `;
   for (const email of emails) {
-    // Simulate sending
-    console.log('=== CONTACT US NOTIFICATION ===');
-    console.log(`To: ${email}`);
-    console.log(`Subject: ${subject}`);
-    console.log(message);
-    console.log('===============================');
-    await simulateEmailSending(email, null, 'contact');
+    try {
+      if (transporter) {
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: email,
+          subject,
+          text: message,
+          html,
+        });
+        console.log(`Contact notification sent to ${email}`);
+      } else {
+        // Fallback to simulation if SMTP not configured
+        await simulateEmailSending(email, null, 'contact');
+      }
+    } catch (err) {
+      console.error(`Failed to send contact notification to ${email}:`, err);
+    }
   }
 };
 
