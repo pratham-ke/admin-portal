@@ -15,7 +15,7 @@ import {
   Mail as MailIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Stats {
   team: number;

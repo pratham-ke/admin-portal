@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Card, CardActionArea, CardContent, Grid, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../components/Layout/Layout';
+import Layout from '../../components/Layout/Layout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LockIcon from '@mui/icons-material/Lock';
 import EmailIcon from '@mui/icons-material/Email';

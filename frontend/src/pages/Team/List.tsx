@@ -24,6 +24,7 @@ import {
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -188,96 +189,134 @@ const Team: React.FC = () => {
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Team Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/team/add')}
-        >
-          Add Member
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/team/add')}
+          >
+            Add Team
+          </Button>
+        </Box>
       </Box>
+
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <Paper>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Position</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
+
+      <TableContainer component={Paper} elevation={3}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>#</TableCell>
+              <TableCell>Image</TableCell>
+              <TableCell sortDirection={orderBy === 'name' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'name'}
+                  direction={orderBy === 'name' ? order : 'asc'}
+                  onClick={() => handleRequestSort('name')}
+                >
+                  Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'position' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'position'}
+                  direction={orderBy === 'position' ? order : 'asc'}
+                  onClick={() => handleRequestSort('position')}
+                >
+                  Position
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'email' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'email'}
+                  direction={orderBy === 'email' ? order : 'asc'}
+                  onClick={() => handleRequestSort('email')}
+                >
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'status' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'status'}
+                  direction={orderBy === 'status' ? order : 'asc'}
+                  onClick={() => handleRequestSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedMembers.map((member, index) => (
+              <TableRow key={member.id} hover>
+                <TableCell>{page * rowsPerPage + index + 1}</TableCell>
+                <TableCell>
+                    <img src={getImageUrl(member.image)} alt={member.name} style={{ width: 40, height: 40, borderRadius: '50%' }} />
+                </TableCell>
+                <TableCell>{member.name}</TableCell>
+                <TableCell>{member.position}</TableCell>
+                <TableCell>{member.email}</TableCell>
+                <TableCell>
+                  <Switch
+                    checked={member.status === 'active'}
+                    onChange={() => handleToggleStatus(member.id)}
+                    color="primary"
+                  />
+                </TableCell>
+                <TableCell align="right">
+                  <IconButton onClick={() => navigate(`/team/view/${member.id}`)}>
+                    <VisibilityIcon />
+                  </IconButton>
+                  <IconButton onClick={(event) => handleMenuOpen(event, member.id)}>
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={menuMemberId === member.id}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={() => handleEdit(member.id)} sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>
+                      <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeleteClick(member.id)} sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}>
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
+                    </MenuItem>
+                  </Menu>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedMembers.map((member) => (
-                <TableRow key={member.id} hover>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <img
-                        src={getImageUrl(member.image)}
-                        alt={member.name}
-                        style={{ width: 40, height: 40, borderRadius: '50%', marginRight: 12 }}
-                      />
-                      <Typography variant="subtitle1">{member.name}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{member.position}</TableCell>
-                  <TableCell>{member.email}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={member.status === 'active'}
-                      onChange={() => handleToggleStatus(member.id)}
-                      color="primary"
-                    />
-                    {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton onClick={() => navigate(`/team/view/${member.id}`)}>
-                      <VisibilityIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleEdit(member.id)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={(e) => handleMenuOpen(e, member.id)}>
-                      <MoreVertIcon />
-                    </IconButton>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={Boolean(anchorEl) && menuMemberId === member.id}
-                      onClose={handleMenuClose}
-                    >
-                      <MenuItem onClick={() => handleDeleteClick(member.id)}>
-                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
-                      </MenuItem>
-                    </Menu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={members.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25, 100]}
+        component="div"
+        count={members.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
       <ConfirmDialog
         open={deleteDialogOpen}
         title="Delete Team Member"
         description="Are you sure you want to delete this team member? This action cannot be undone."
-        onCancel={handleDeleteCancel}
+        confirmButtonText="Delete"
         onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
       />
     </Box>
   );

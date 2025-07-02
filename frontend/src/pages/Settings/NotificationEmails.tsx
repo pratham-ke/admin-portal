@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import Layout from '../components/Layout/Layout';
 import { Box, Typography, Paper, TextField, Button, Alert, Chip } from '@mui/material';
-import settingsService from '../services/settingsService';
+import settingsService from '../../services/settingsService';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 
@@ -60,36 +59,34 @@ const NotificationEmails: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <Box sx={{ flexGrow: 1 }}>
-        <Button startIcon={<ArrowBackIcon />} sx={{ mb: 2 }} onClick={() => navigate(-1)}>
-          Back
-        </Button>
-        <Typography variant="h4" gutterBottom>Notification Emails</Typography>
-        <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
-          <Typography sx={{ mb: 2 }}>Enter one or more email addresses to receive contact form notifications.</Typography>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-            <TextField
-              label="Add Email"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
-              size="small"
-              fullWidth
-            />
-            <Button variant="contained" onClick={handleAdd} disabled={!input.trim()}>Add</Button>
-          </Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-            {emails.map(email => (
-              <Chip key={email} label={email} onDelete={() => handleDelete(email)} />
-            ))}
-          </Box>
-          <Button variant="contained" color="primary" onClick={handleSave} disabled={loading || emails.length === 0}>Save</Button>
-        </Paper>
-      </Box>
-    </Layout>
+    <Box sx={{ flexGrow: 1 }}>
+      <Button startIcon={<ArrowBackIcon />} sx={{ mb: 2 }} onClick={() => navigate(-1)}>
+        Back
+      </Button>
+      <Typography variant="h4" gutterBottom>Notification Emails</Typography>
+      <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
+        <Typography sx={{ mb: 2 }}>Enter one or more email addresses to receive contact form notifications.</Typography>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <TextField
+            label="Add Email"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
+            size="small"
+            fullWidth
+          />
+          <Button variant="contained" onClick={handleAdd} disabled={!input.trim()}>Add</Button>
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+          {emails.map(email => (
+            <Chip key={email} label={email} onDelete={() => handleDelete(email)} />
+          ))}
+        </Box>
+        <Button variant="contained" color="primary" onClick={handleSave} disabled={loading || emails.length === 0}>Save</Button>
+      </Paper>
+    </Box>
   );
 };
 

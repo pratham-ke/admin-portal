@@ -25,11 +25,11 @@ import {
   ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import Menu from '@mui/material/Menu';
 import MenuItemMui from '@mui/material/MenuItem';
-import apiClient from '../services/apiClient';
-import ConfirmDialog from '../components/ConfirmDialog';
+import apiClient from '../../services/apiClient';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 // --- Embedded User Service ---
 const userService = {

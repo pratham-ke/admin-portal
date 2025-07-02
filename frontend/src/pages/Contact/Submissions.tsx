@@ -22,7 +22,7 @@ import {
   ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import contactService from '../services/contactService';
+import contactService from '../../services/contactService';
 
 interface Submission {
   id: number;
@@ -268,4 +268,4 @@ const ContactSubmissions: React.FC = () => {
   );
 };
 
-export default ContactSubmissions;
+export default ContactSubmissions; 

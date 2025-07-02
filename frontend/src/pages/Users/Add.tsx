@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -13,68 +13,34 @@ import {
   CardHeader,
   Divider,
   Avatar,
-  CircularProgress,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
-import ImageUpload from '../components/ImageUpload';
-import apiClient from '../services/apiClient';
+import ImageUpload from '../../components/ImageUpload';
+import apiClient from '../../services/apiClient';
 
 // --- Embedded User Service ---
 const userService = {
-  getUser: (id: string) => apiClient.get(`/users/${id}`),
-  updateUser: (id: string, userData: FormData) => apiClient.put(`/users/${id}`, userData, {
+  createUser: (userData: FormData) => apiClient.post('/users', userData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 };
 // -------------------------
 
-const getImageUrl = (image: string | undefined): string | null => {
-    if (!image) return null;
-    if (/^https?:\/\//.test(image) || /^blob:/.test(image)) return image;
-    return `http://localhost:5000/uploads/user/${image}`;
-};
-
-interface EditUserProps {
-  isProfilePage?: boolean;
-}
-
-const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
-  const { id: paramId } = useParams<{ id: string }>();
+const AddUser: React.FC = () => {
   const navigate = useNavigate();
-  const { token, user } = useAuth();
-  const id = isProfilePage ? user?.id?.toString() : paramId;
+  const { token } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    password: '',
     role: 'user',
   });
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const response = await userService.getUser(id!);
-        const { username, email, role, image } = response.data;
-        setFormData({ username, email, role });
-        if (image) {
-            setImagePreview(getImageUrl(image));
-        }
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch user data.');
-        toast.error('Failed to fetch user data.');
-        setLoading(false);
-      }
-    };
-    if (id) fetchUser();
-  }, [id, token]);
 
   const handleFileChange = (file: File | null) => {
     if (file) {
@@ -98,9 +64,9 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
     e.preventDefault();
     setError('');
 
-    if (!formData.username || !formData.email) {
-      setError('Username and Email are required.');
-      toast.error('Username and Email are required.');
+    if (!formData.username || !formData.email || !formData.password) {
+      setError('Username, Email, and Password are required.');
+      toast.error('Username, Email, and Password are required.');
       return;
     }
 
@@ -108,52 +74,35 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
       const data = new FormData();
       data.append('username', formData.username);
       data.append('email', formData.email);
+      data.append('password', formData.password);
       data.append('role', formData.role);
       if (imageFile) {
         data.append('image', imageFile);
       }
 
-      await userService.updateUser(id!, data);
-      toast.success('User updated successfully!');
+      await userService.createUser(data);
+      toast.success('User added successfully!');
       navigate('/users');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'An error occurred while updating the user.';
+      const errorMessage = err.response?.data?.message || 'An error occurred while adding the user.';
       setError(errorMessage);
       toast.error(errorMessage);
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-  
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          {isProfilePage ? 'My Profile' : 'Edit User'}
+          Add New User
         </Typography>
-        {isProfilePage ? (
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/dashboard')}
-          >
-            Back to Dashboard
-          </Button>
-        ) : (
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/users')}
-          >
-            Back to Users
-          </Button>
-        )}
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/users')}
+        >
+          Back to Users
+        </Button>
       </Box>
 
       <form onSubmit={handleSubmit}>
@@ -167,7 +116,7 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
                 <ImageUpload
                   imagePreview={imagePreview}
                   onFileChange={handleFileChange}
-                  label="Change Profile Picture"
+                  label="Upload Profile Picture"
                   avatarSize={180}
                 />
               </Grid>
@@ -197,6 +146,17 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
+                      label="Password"
+                      name="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
                       select
                       label="Role"
                       name="role"
@@ -214,7 +174,7 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
           <Divider />
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
             <Button type="submit" variant="contained" color="primary">
-              Save Changes
+              Add User
             </Button>
           </Box>
         </Card>
@@ -223,4 +183,4 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
   );
 };
 
-export default EditUser; 
+export default AddUser; 
