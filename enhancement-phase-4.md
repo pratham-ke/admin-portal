@@ -39,6 +39,27 @@ You are a **senior-level Cursor AI prompt engineer** tasked with connecting the 
 
 ---
 
+### 🟢 Additional Optimization Checklist
+
+- [x] **Enforce file and folder naming consistency:**
+  - All React component, page, and context files/folders must use PascalCase.
+  - All service and utility files must use camelCase.
+  - No snake_case, kebab-case, or inconsistent naming anywhere in the codebase.
+- [x] **Ensure component/service/context reusability:**
+  - All shared UI logic must be in `components/`.
+  - All API and business logic must be in `services/`.
+  - All global state must be in `contexts/`.
+  - No duplicate or feature-specific logic in shared folders.
+- [x] **Remove all dead, duplicate, or misplaced files:**
+  - No unused, duplicate, or misplaced files in any folder.
+  - Each module/folder should only contain relevant files.
+- [x] **Review and refactor for DRY principles:**
+  - Extract repeated UI or logic into reusable components/services.
+  - No copy-paste code across modules.
+- [x] **After applying these points, re-audit the codebase for any missed inconsistencies or anti-patterns.**
+
+---
+
 ### 🧠 Final Instructions to Cursor AI
 - [x] Read this file and perform every enhancement step-by-step
 - [x] Apply changes directly without interaction
