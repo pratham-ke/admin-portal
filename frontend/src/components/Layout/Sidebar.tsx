@@ -35,7 +35,7 @@ const menuItems = [
   { text: 'Team', icon: <TeamIcon />, path: '/team' },
   { text: 'Blog', icon: <BlogIcon />, path: '/blog' },
   { text: 'Portfolio', icon: <PortfolioIcon />, path: '/portfolio' },
-  { text: 'Contact', icon: <PeopleIcon />, path: '/contact', adminOnly: true },
+  { text: 'Contact', icon: <PeopleIcon />, path: '/contact-submissions', adminOnly: true },
   { text: 'Users', icon: <UserIcon />, path: '/users', adminOnly: true },
 ];
 
@@ -155,7 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                   >
                     {item.icon}
                   </ListItemIcon>
-                  {!isCollapsed && (
+                  {!isCollapsed ? (
                     <ListItemText 
                       primary={item.text} 
                       sx={{
@@ -164,7 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                         },
                       }}
                     />
-                  )}
+                  ) : null}
                 </ListItem>
               </Tooltip>
             );
@@ -207,7 +207,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               >
                 <LogoutIcon />
               </ListItemIcon>
-              {!isCollapsed && (
+              {!isCollapsed ? (
                 <ListItemText 
                   primary="Logout" 
                   sx={{
@@ -216,7 +216,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                     },
                   }}
                 />
-              )}
+              ) : null}
             </ListItem>
           </Tooltip>
         </List>

@@ -116,7 +116,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: 0,
           width: `calc(100% - ${currentDrawerWidth}px)`,
           transition: 'width 0.3s ease',
           mt: 8,

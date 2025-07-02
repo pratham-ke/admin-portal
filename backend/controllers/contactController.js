@@ -19,7 +19,8 @@ function decrypt(text) {
 
 exports.submitContact = async (req, res) => {
   try {
-    const result = await contactService.submitContact(req.body, req.headers);
+    // Pass req.ip as a custom header for fallback
+    const result = await contactService.submitContact(req.body, { ...req.headers, 'req-ip': req.ip });
     res.status(201).json(result);
   } catch (error) {
     if (error.status) {

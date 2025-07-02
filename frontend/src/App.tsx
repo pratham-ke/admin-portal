@@ -22,17 +22,18 @@ import BlogView from "./pages/Blog/View";
 import PortfolioView from "./pages/PortfolioView";
 import AddUser from "./pages/AddUser";
 import EditUser from "./pages/EditUser";
-import AddTeam from "./pages/AddTeam";
+import AddTeam from "./pages/Users/AddTeam";
 import EditTeam from "./pages/EditTeam";
 import AddBlog from "./pages/Blog/Add";
 import EditBlog from "./pages/Blog/Edit";
-import AddPortfolio from "./pages/AddPortfolio";
-import EditPortfolio from "./pages/EditPortfolio";
-import ContactSubmissions from './pages/ContactSubmissions';
-import ContactSubmissionView from './pages/ContactSubmissionView';
-import NotificationEmails from './pages/NotificationEmails';
-import SettingsPage from './pages/SettingsPage';
-import ChangePasswordPage from './pages/ChangePasswordPage';
+import AddPortfolio from "./pages/Portfolio/Add";
+import EditPortfolio from "./pages/Portfolio/Edit";
+import ContactSubmissions from "./pages/ContactSubmissions";
+import ContactSubmissionView from "./pages/ContactSubmissionView";
+import SettingsPage from "./pages/SettingsPage";
+import NotificationEmails from "./pages/NotificationEmails";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
+import ErrorPage from "./pages/ErrorPage";
 
 // Create theme
 const theme = createTheme({
@@ -238,11 +239,57 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="/settings/change-password" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />
-            <Route path="/settings/notification-emails" element={<ProtectedRoute adminOnly><NotificationEmails /></ProtectedRoute>} />
-            <Route path="/contact" element={<ProtectedRoute adminOnly><ContactSubmissions /></ProtectedRoute>} />
-            <Route path="/contact/:id" element={<ProtectedRoute adminOnly><ContactSubmissionView /></ProtectedRoute>} />
+            <Route
+              path="/contact-submissions"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ContactSubmissions />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contact/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ContactSubmissionView />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SettingsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/notification-emails"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <NotificationEmails />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/change-password"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ChangePasswordPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<ErrorPage />} />
           </Routes>
         </Router>
       </AuthProvider>

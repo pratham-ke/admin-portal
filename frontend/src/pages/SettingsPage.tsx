@@ -23,32 +23,30 @@ const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <Layout>
-      <Box sx={{ maxWidth: 800, mx: 'auto', mt: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mr: 2 }}>
-            Back
-          </Button>
-          <Typography variant="h4" component="h1">
-            Settings
-          </Typography>
-        </Box>
-        <Grid container spacing={3}>
-          {options.map(opt => (
-            <Grid item xs={12} sm={6} key={opt.label}>
-              <Card>
-                <CardActionArea onClick={() => navigate(opt.path)}>
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6 }}>
-                    {opt.icon}
-                    <Typography variant="h6" sx={{ mt: 2 }}>{opt.label}</Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+    <Box sx={{ width: '100%', mt: 0, pl: 0, ml: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, pl: 0, ml: 0 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mr: 2 }}>
+          Back
+        </Button>
+        <Typography variant="h4" component="h1" sx={{ ml: 0 }}>
+          Settings
+        </Typography>
       </Box>
-    </Layout>
+      <Grid container spacing={3} sx={{ width: '100%', m: 0 }}>
+        {options.map(opt => (
+          <Grid item xs={12} sm={6} key={opt.label}>
+            <Card>
+              <CardActionArea onClick={() => navigate(opt.path)}>
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6 }}>
+                  {opt.icon}
+                  <Typography variant="h6" sx={{ mt: 2 }}>{opt.label}</Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
   );
 };
 

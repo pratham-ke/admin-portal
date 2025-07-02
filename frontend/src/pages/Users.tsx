@@ -22,6 +22,7 @@ import {
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -62,7 +63,7 @@ const Users: React.FC = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState('');
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<keyof User>('username');
   const [rowsPerPage, setRowsPerPage] = useState(() => {
@@ -169,6 +170,8 @@ const Users: React.FC = () => {
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
+  // Filter out the currently logged-in user
+  const filteredUsers = users.filter(u => u.id !== user?.id);
   const sortedUsers = users.slice().sort((a, b) => getComparator(order, orderBy)(a, b));
   const paginatedUsers = sortedUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -192,18 +195,27 @@ const Users: React.FC = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           User Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/users/add')}
-        >
-          Add User
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/users/add')}
+          >
+            Add User
+          </Button>
+        </Box>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}

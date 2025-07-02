@@ -15,10 +15,10 @@ import {
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
-import ImageUpload from '../components/ImageUpload';
-import apiClient from '../services/apiClient';
+import ImageUpload from '../../components/ImageUpload';
+import apiClient from '../../services/apiClient';
 import JoditEditor from 'jodit-react';
 
 // --- Embedded Team Service ---

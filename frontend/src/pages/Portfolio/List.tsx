@@ -24,12 +24,11 @@ import {
   Visibility as VisibilityIcon,
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
-  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import apiClient from '../services/apiClient';
-import ConfirmDialog from '../components/ConfirmDialog';
+import { useAuth } from '../../contexts/AuthContext';
+import apiClient from '../../services/apiClient';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 // --- Embedded Portfolio Service ---
 const portfolioService = {
@@ -192,27 +191,18 @@ const Portfolio: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ flexGrow: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Portfolio Management
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/dashboard')}
-          >
-            Back
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/portfolio/add')}
-          >
-            Add Item
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => navigate('/portfolio/add')}
+        >
+          Add Item
+        </Button>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -258,7 +248,7 @@ const Portfolio: React.FC = () => {
               <TableRow key={item.id} hover>
                 <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell>
-                  <img src={getImageUrl(item.image)} alt={item.name} style={{ width: 48, height: 48, borderRadius: '4px', objectFit: 'cover' }} />
+                  <img src={getImageUrl(item.image)} alt={item.name} style={{ width: 48, height: 48, borderRadius: 4, objectFit: 'cover' }} />
                 </TableCell>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.category}</TableCell>
@@ -278,13 +268,19 @@ const Portfolio: React.FC = () => {
                   </IconButton>
                   <Menu
                     anchorEl={anchorEl}
-                    open={menuItemId === item.id}
+                    open={Boolean(anchorEl) && menuItemId === item.id}
                     onClose={handleMenuClose}
                   >
-                    <MenuItemMui onClick={() => handleEdit(item.id)} sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>
+                    <MenuItemMui
+                      onClick={() => handleEdit(item.id)}
+                      sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}
+                    >
                       <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
                     </MenuItemMui>
-                    <MenuItemMui onClick={() => handleDeleteClick(item.id)} sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}>
+                    <MenuItemMui
+                      onClick={() => handleDeleteClick(item.id)}
+                      sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}
+                    >
                       <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
                     </MenuItemMui>
                   </Menu>

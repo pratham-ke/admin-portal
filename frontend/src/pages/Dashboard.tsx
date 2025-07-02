@@ -12,6 +12,7 @@ import {
   Article as ArticleIcon,
   Work as WorkIcon,
   Person as PersonIcon,
+  Mail as MailIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +21,7 @@ interface Stats {
   team: number;
   blog: number;
   portfolio: number;
+  contact: number;
   users: number;
 }
 
@@ -28,6 +30,7 @@ const Dashboard: React.FC = () => {
     team: 0,
     blog: 0,
     portfolio: 0,
+    contact: 0,
     users: 0,
   });
   const { token, user } = useAuth();
@@ -37,8 +40,8 @@ const Dashboard: React.FC = () => {
       try {
         const isAdmin = user?.role === 'admin';
         
-        // Always fetch team, blog, and portfolio stats
-        const [teamRes, blogRes, portfolioRes] = await Promise.all([
+        // Always fetch team, blog, portfolio, and contact stats
+        const [teamRes, blogRes, portfolioRes, contactRes] = await Promise.all([
           axios.get('http://localhost:5000/api/v1/team', {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -46,6 +49,9 @@ const Dashboard: React.FC = () => {
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get('http://localhost:5000/api/v1/portfolio', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get('http://localhost:5000/api/contact/submissions?limit=1', {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -69,6 +75,7 @@ const Dashboard: React.FC = () => {
           team: teamRes.data.length,
           blog: blogRes.data.length,
           portfolio: portfolioRes.data.length,
+          contact: contactRes.data.total || 0,
           users: usersCount,
         });
       } catch (error) {
@@ -124,6 +131,13 @@ const Dashboard: React.FC = () => {
             title="Portfolio Items"
             value={stats.portfolio}
             icon={<WorkIcon color="primary" />}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Contact Submissions"
+            value={stats.contact}
+            icon={<MailIcon color="primary" />}
           />
         </Grid>
         {user?.role === 'admin' && (

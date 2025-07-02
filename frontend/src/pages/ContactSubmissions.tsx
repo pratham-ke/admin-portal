@@ -1,7 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import Layout from '../components/Layout/Layout';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TablePagination, IconButton, TextField, Button, Alert } from '@mui/material';
-import { Visibility as VisibilityIcon, Download as DownloadIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  TablePagination,
+  IconButton,
+  TextField,
+  Button,
+  Alert
+} from '@mui/material';
+import {
+  Visibility as VisibilityIcon,
+  Download as DownloadIcon,
+  ArrowBack as ArrowBackIcon
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import contactService from '../services/contactService';
 
@@ -66,13 +85,18 @@ const ContactSubmissions: React.FC = () => {
     return 0;
   }
 
-  function getComparator<Key extends keyof Submission>(order: Order, orderBy: Key): (a: Submission, b: Submission) => number {
+  function getComparator<Key extends keyof Submission>(
+    order: Order,
+    orderBy: Key
+  ): (a: Submission, b: Submission) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
-  const sortedSubmissions = submissions.slice().sort(getComparator(order, orderBy));
+  const sortedSubmissions = submissions
+    .slice()
+    .sort(getComparator(order, orderBy));
 
   const handleRequestSort = (property: keyof Submission) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -80,8 +104,12 @@ const ContactSubmissions: React.FC = () => {
     setOrderBy(property);
   };
 
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
-  const handleChangeRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangePage = (_: unknown, newPage: number) =>
+    setPage(newPage);
+
+  const handleChangeRowsPerPage = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
@@ -108,84 +136,136 @@ const ContactSubmissions: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <Box sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mr: 2 }}>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          Contact Submissions
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
             Back
           </Button>
-          <Typography variant="h4">Contact Submissions</Typography>
-          <Box sx={{ flexGrow: 1 }} />
-          <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExport}>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={handleExport}
+          >
             Export CSV
           </Button>
         </Box>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <Paper sx={{ mb: 2, p: 2, display: 'flex', gap: 2 }}>
-          <TextField label="Email" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} size="small" />
-          <TextField label="From" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} size="small" InputLabelProps={{ shrink: true }} />
-          <TextField label="To" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} size="small" InputLabelProps={{ shrink: true }} />
-        </Paper>
-        <TableContainer component={Paper} elevation={3}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Sr No.</TableCell>
-                <TableCell sortDirection={orderBy === 'firstName' ? order : false}>
-                  <TableSortLabel active={orderBy === 'firstName'} direction={orderBy === 'firstName' ? order : 'asc'} onClick={() => handleRequestSort('firstName')}>
-                    First Name
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell sortDirection={orderBy === 'lastName' ? order : false}>
-                  <TableSortLabel active={orderBy === 'lastName'} direction={orderBy === 'lastName' ? order : 'asc'} onClick={() => handleRequestSort('lastName')}>
-                    Last Name
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell sortDirection={orderBy === 'email' ? order : false}>
-                  <TableSortLabel active={orderBy === 'email'} direction={orderBy === 'email' ? order : 'asc'} onClick={() => handleRequestSort('email')}>
-                    Email
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>Phone</TableCell>
-                <TableCell sortDirection={orderBy === 'submittedAt' ? order : false}>
-                  <TableSortLabel active={orderBy === 'submittedAt'} direction={orderBy === 'submittedAt' ? order : 'asc'} onClick={() => handleRequestSort('submittedAt')}>
-                    Submitted At
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>IP Address</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedSubmissions.map((s, idx) => (
-                <TableRow key={s.id} hover>
-                  <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                  <TableCell>{s.firstName}</TableCell>
-                  <TableCell>{s.lastName}</TableCell>
-                  <TableCell>{s.email}</TableCell>
-                  <TableCell>{s.phone}</TableCell>
-                  <TableCell>{new Date(s.submittedAt).toLocaleString()}</TableCell>
-                  <TableCell>{s.ipAddress}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => navigate(`/contact/${s.id}`)}><VisibilityIcon /></IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 100]}
-          component="div"
-          count={total}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+      </Box>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      <Box sx={{ display: 'flex', gap: 2, width: '100%', mb: 3 }}>
+        <TextField
+          label="Email"
+          value={emailFilter}
+          onChange={(e) => setEmailFilter(e.target.value)}
+          size="small"
+        />
+        <TextField
+          label="From"
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+        />
+        <TextField
+          label="To"
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          size="small"
+          InputLabelProps={{ shrink: true }}
         />
       </Box>
-    </Layout>
+      <TableContainer component={Paper} elevation={3} sx={{ width: '100%', mx: 0, borderRadius: 0, boxShadow: 'none' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Sr No.</TableCell>
+              <TableCell sortDirection={orderBy === 'firstName' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'firstName'}
+                  direction={orderBy === 'firstName' ? order : 'asc'}
+                  onClick={() => handleRequestSort('firstName')}
+                >
+                  First Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'lastName' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'lastName'}
+                  direction={orderBy === 'lastName' ? order : 'asc'}
+                  onClick={() => handleRequestSort('lastName')}
+                >
+                  Last Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={orderBy === 'email' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'email'}
+                  direction={orderBy === 'email' ? order : 'asc'}
+                  onClick={() => handleRequestSort('email')}
+                >
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>Phone</TableCell>
+              <TableCell sortDirection={orderBy === 'submittedAt' ? order : false}>
+                <TableSortLabel
+                  active={orderBy === 'submittedAt'}
+                  direction={orderBy === 'submittedAt' ? order : 'asc'}
+                  onClick={() => handleRequestSort('submittedAt')}
+                >
+                  Submitted At
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>IP Address</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedSubmissions.map((s, idx) => (
+              <TableRow key={s.id} hover>
+                <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                <TableCell>{s.firstName}</TableCell>
+                <TableCell>{s.lastName}</TableCell>
+                <TableCell>{s.email}</TableCell>
+                <TableCell>{s.phone}</TableCell>
+                <TableCell>
+                  {new Date(s.submittedAt).toLocaleString()}
+                </TableCell>
+                <TableCell>{s.ipAddress}</TableCell>
+                <TableCell>
+                  <IconButton onClick={() => navigate(`/contact/${s.id}`)}>
+                    <VisibilityIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25, 100]}
+        component="div"
+        count={total}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+    </Box>
   );
 };
 
-export default ContactSubmissions; 
+export default ContactSubmissions;
