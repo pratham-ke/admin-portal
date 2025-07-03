@@ -38,6 +38,7 @@ const AddTeam: React.FC = () => {
     name: '',
     email: '',
     position: '',
+    linkedin: '',
   });
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -65,9 +66,9 @@ const AddTeam: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!formData.name || !formData.email || !formData.position) {
-      setError('Name, Email, and Position are required.');
-      toast.error('Name, Email, and Position are required.');
+    if (!formData.name || !formData.position) {
+      setError('Name and Position are required.');
+      toast.error('Name and Position are required.');
       return;
     }
 
@@ -77,6 +78,7 @@ const AddTeam: React.FC = () => {
       data.append('email', formData.email);
       data.append('position', formData.position);
       data.append('bio', bio);
+      data.append('linkedin', formData.linkedin);
       
       if (imageFile) {
         data.append('image', imageFile);
@@ -98,16 +100,21 @@ const AddTeam: React.FC = () => {
         <Typography variant="h4" component="h1">
           Add New Team Member
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/team')}
-        >
-          Back to Team
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/team')}
+          >
+            Back to Team
+          </Button>
+          <Button type="submit" form="add-team-form" variant="contained" color="primary">
+            Add Member
+          </Button>
+        </Box>
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <form id="add-team-form" onSubmit={handleSubmit}>
         <Card component={Paper} elevation={3}>
           <CardHeader title="Team Member Details" />
           <Divider />
@@ -146,8 +153,16 @@ const AddTeam: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
                   sx={{ mt: 3 }}
+                />
+                <TextField
+                  fullWidth
+                  label="LinkedIn URL"
+                  name="linkedin"
+                  value={formData.linkedin}
+                  onChange={handleChange}
+                  sx={{ mt: 3 }}
+                  placeholder="https://linkedin.com/in/username"
                 />
               </Grid>
               <Grid item xs={12} md={8} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -164,11 +179,6 @@ const AddTeam: React.FC = () => {
             </Grid>
           </CardContent>
           <Divider />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-            <Button type="submit" variant="contained" color="primary">
-              Add Member
-            </Button>
-          </Box>
         </Card>
       </form>
     </Box>

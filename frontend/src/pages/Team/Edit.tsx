@@ -47,6 +47,7 @@ const EditTeam: React.FC = () => {
     name: '',
     email: '',
     position: '',
+    linkedin: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,11 +59,12 @@ const EditTeam: React.FC = () => {
       try {
         setLoading(true);
         const response = await teamService.getMember(id!);
-        const { name, email, position, bio, image } = response.data;
+        const { name, email, position, bio, image, linkedin } = response.data;
         setFormData({ 
           name: name ?? '',
           email: email ?? '',
-          position: position ?? ''
+          position: position ?? '',
+          linkedin: linkedin ?? '',
         });
         setBio(bio || '');
         if (image) {
@@ -100,9 +102,9 @@ const EditTeam: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!formData.name || !formData.email || !formData.position) {
-      setError('Name, Email, and Position are required.');
-      toast.error('Name, Email, and Position are required.');
+    if (!formData.name || !formData.position) {
+      setError('Name and Position are required.');
+      toast.error('Name and Position are required.');
       return;
     }
 
@@ -112,6 +114,9 @@ const EditTeam: React.FC = () => {
       data.append('email', formData.email);
       data.append('position', formData.position);
       data.append('bio', bio);
+      if (formData.linkedin) {
+        data.append('linkedin', formData.linkedin);
+      }
 
       if (imageFile) {
         data.append('image', imageFile);
@@ -141,16 +146,21 @@ const EditTeam: React.FC = () => {
         <Typography variant="h4" component="h1">
           Edit Team Member
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/team')}
-        >
-          Back to Team
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/team')}
+          >
+            Back to Team
+          </Button>
+          <Button type="submit" form="edit-team-form" variant="contained" color="primary">
+            Save Changes
+          </Button>
+        </Box>
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <form id="edit-team-form" onSubmit={handleSubmit}>
         <Card component={Paper} elevation={3}>
           <CardHeader title="Team Member Details" />
           <Divider />
@@ -189,8 +199,16 @@ const EditTeam: React.FC = () => {
                   type="email"
                   value={formData.email || ''}
                   onChange={handleChange}
-                  required
                   sx={{ mt: 3 }}
+                />
+                <TextField
+                  fullWidth
+                  label="LinkedIn URL"
+                  name="linkedin"
+                  value={formData.linkedin}
+                  onChange={handleChange}
+                  sx={{ mt: 3 }}
+                  placeholder="https://linkedin.com/in/username"
                 />
               </Grid>
               <Grid item xs={12} md={8} sx={{ minHeight: 500, display: 'flex', flexDirection: 'column' }}>
@@ -207,11 +225,6 @@ const EditTeam: React.FC = () => {
             </Grid>
           </CardContent>
           <Divider />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-            <Button type="submit" variant="contained" color="primary">
-              Save Changes
-            </Button>
-          </Box>
         </Card>
       </form>
     </Box>

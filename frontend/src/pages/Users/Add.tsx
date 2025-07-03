@@ -96,16 +96,21 @@ const AddUser: React.FC = () => {
         <Typography variant="h4" component="h1">
           Add New User
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/users')}
-        >
-          Back to Users
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/users')}
+          >
+            Back to Users
+          </Button>
+          <Button type="submit" form="add-user-form" variant="contained" color="primary">
+            Add User
+          </Button>
+        </Box>
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <form id="add-user-form" onSubmit={handleSubmit}>
         <Card component={Paper} elevation={3}>
           <CardHeader title="User Details" />
           <Divider />
@@ -172,11 +177,6 @@ const AddUser: React.FC = () => {
             </Grid>
           </CardContent>
           <Divider />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-            <Button type="submit" variant="contained" color="primary">
-              Add User
-            </Button>
-          </Box>
         </Card>
       </form>
     </Box>

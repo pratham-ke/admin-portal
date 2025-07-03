@@ -96,16 +96,21 @@ const AddBlog: React.FC = () => {
         <Typography variant="h4" component="h1">
           Add New Blog Post
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/blog')}
-        >
-          Back to Blog
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/blog')}
+          >
+            Back to Blog
+          </Button>
+          <Button type="submit" form="add-blog-form" variant="contained" color="primary">
+            Add Post
+          </Button>
+        </Box>
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <form id="add-blog-form" onSubmit={handleSubmit}>
         <Card component={Paper} elevation={3}>
           <CardHeader title="Blog Post Details" />
           <Divider />
@@ -153,11 +158,6 @@ const AddBlog: React.FC = () => {
             </Grid>
           </CardContent>
           <Divider />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-            <Button type="submit" variant="contained" color="primary">
-              Add Post
-            </Button>
-          </Box>
         </Card>
       </form>
     </Box>

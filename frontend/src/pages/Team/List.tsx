@@ -25,6 +25,7 @@ import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
   ArrowBack as ArrowBackIcon,
+  LinkedIn as LinkedInIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -46,6 +47,7 @@ interface TeamMember {
   image: string;
   email: string;
   status: 'active' | 'inactive';
+  linkedin?: string;
 }
 
 const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=Team&background=random&size=48';
@@ -247,6 +249,7 @@ const Team: React.FC = () => {
                   Email
                 </TableSortLabel>
               </TableCell>
+              <TableCell>LinkedIn</TableCell>
               <TableCell sortDirection={orderBy === 'status' ? order : false}>
                 <TableSortLabel
                   active={orderBy === 'status'}
@@ -269,6 +272,13 @@ const Team: React.FC = () => {
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.position}</TableCell>
                 <TableCell>{member.email}</TableCell>
+                <TableCell>
+                  {member.linkedin ? (
+                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer">
+                      <LinkedInIcon color="primary" />
+                    </a>
+                  ) : '-'}
+                </TableCell>
                 <TableCell>
                   <Switch
                     checked={member.status === 'active'}

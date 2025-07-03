@@ -43,6 +43,11 @@ const BlogView: React.FC = () => {
 
   return (
     <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, width: '100%' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3, maxWidth: 1100, mx: 'auto' }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} variant="outlined">
+          Back
+        </Button>
+      </Box>
       <Card component={Paper} elevation={3} sx={{ width: '100%', maxWidth: 1100, mx: 'auto', borderRadius: 3 }}>
         <CardHeader
           avatar={
@@ -83,11 +88,6 @@ const BlogView: React.FC = () => {
           )}
         </CardContent>
         <Divider />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} variant="outlined">
-            Back
-          </Button>
-        </Box>
       </Card>
     </Box>
   );

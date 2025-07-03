@@ -100,16 +100,21 @@ const AddPortfolio: React.FC = () => {
         <Typography variant="h4" component="h1">
           Add New Portfolio Item
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/portfolio')}
-        >
-          Back to Portfolio
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/portfolio')}
+          >
+            Back to Portfolio
+          </Button>
+          <Button type="submit" form="add-portfolio-form" variant="contained" color="primary">
+            Add Item
+          </Button>
+        </Box>
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <form id="add-portfolio-form" onSubmit={handleSubmit}>
         <Card component={Paper} elevation={3}>
           <CardHeader title="Project Details" />
           <Divider />
@@ -174,11 +179,6 @@ const AddPortfolio: React.FC = () => {
             </Grid>
           </CardContent>
           <Divider />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-            <Button type="submit" variant="contained" color="primary">
-              Add Item
-            </Button>
-          </Box>
         </Card>
       </form>
     </Box>
