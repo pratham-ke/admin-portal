@@ -24,7 +24,10 @@ import apiClient from '../../services/apiClient';
 
 // --- Embedded User Service ---
 const userService = {
-  getUser: (id: string) => apiClient.get(`/users/${id}`),
+  getUser: (id: string, isProfilePage?: boolean) =>
+    isProfilePage
+      ? apiClient.get('/auth/me')
+      : apiClient.get(`/users/${id}`),
   updateUser: (id: string, userData: FormData) => apiClient.put(`/users/${id}`, userData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
@@ -60,8 +63,9 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-        const response = await userService.getUser(id!);
-        const { username, email, role, image } = response.data;
+        const response = await userService.getUser(id!, isProfilePage);
+        const userData = response.data.user || response.data;
+        const { username, email, role, image } = userData;
         setFormData({ username, email, role });
         if (image) {
             setImagePreview(getImageUrl(image));
@@ -73,8 +77,8 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
         setLoading(false);
       }
     };
-    if (id) fetchUser();
-  }, [id, token]);
+    if (id || isProfilePage) fetchUser();
+  }, [id, token, isProfilePage]);
 
   const handleFileChange = (file: File | null) => {
     if (file) {
@@ -207,6 +211,7 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
                       name="role"
                       value={formData.role}
                       onChange={handleChange}
+                      disabled={isProfilePage}
                     >
                       <MenuItem value="admin">Admin</MenuItem>
                       <MenuItem value="user">User</MenuItem>

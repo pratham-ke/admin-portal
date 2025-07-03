@@ -10,23 +10,19 @@ interface ToastOptions {
 // In a real application, you'd use a proper toast library like react-toastify
 class ToastService {
   success(message: string, options?: ToastOptions): void {
-    console.log(`✅ ${message}`);
-    // For now, use console.log. In production, integrate with a proper toast library
+    // No console.log
   }
 
   error(message: string, options?: ToastOptions): void {
-    console.error(`❌ ${message}`);
-    // For now, use console.error. In production, integrate with a proper toast library
+    // No console.error
   }
 
   warning(message: string, options?: ToastOptions): void {
-    console.warn(`⚠️ ${message}`);
-    // For now, use console.warn. In production, integrate with a proper toast library
+    // No console.warn
   }
 
   info(message: string, options?: ToastOptions): void {
-    console.info(`ℹ️ ${message}`);
-    // For now, use console.info. In production, integrate with a proper toast library
+    // No console.info
   }
 }
 

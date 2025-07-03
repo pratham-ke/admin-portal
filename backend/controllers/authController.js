@@ -103,6 +103,14 @@ const login = async (req, res) => {
       });
     }
 
+    // Check if user is active
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'User is not active, please contact the admin.'
+      });
+    }
+
     // Validate password
     const isValidPassword = await user.validatePassword(password);
     if (!isValidPassword) {

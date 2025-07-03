@@ -7,9 +7,9 @@ const contactController = require('../controllers/contactController');
 router.post('/', contactController.submitContact);
 
 // Admin: list, filter, export submissions
-router.get('/submissions', auth, adminAuth, contactController.getSubmissions);
+router.get('/submissions', auth, contactController.getSubmissions);
 
 // Admin: detail view
-router.get('/submissions/:id', auth, adminAuth, contactController.getSubmissionDetail);
+router.get('/submissions/:id', auth, contactController.getSubmissionDetail);
 
 module.exports = router; 

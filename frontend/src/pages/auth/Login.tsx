@@ -6,11 +6,12 @@ import {
   TextField,
   Button,
   Paper,
-  Alert,
   Link,
   CircularProgress,
   InputAdornment,
   IconButton,
+  Snackbar,
+  Alert as MuiAlert,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -35,6 +36,7 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -95,9 +97,15 @@ const Login: React.FC = () => {
                           err.response?.data?.errors?.join(', ') || 
                           'An error occurred during login';
       setGeneralError(errorMessage);
+      setSnackbarOpen(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSnackbarClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') return;
+    setSnackbarOpen(false);
   };
 
   return (
@@ -128,11 +136,17 @@ const Login: React.FC = () => {
             Sign in to access your admin dashboard
           </Typography>
 
-          {generalError && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+          {/* Modern Snackbar Alert for login errors */}
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={3000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          >
+            <MuiAlert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }} elevation={6} variant="filled">
               {generalError}
-            </Alert>
-          )}
+            </MuiAlert>
+          </Snackbar>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField

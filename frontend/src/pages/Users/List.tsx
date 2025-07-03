@@ -172,7 +172,7 @@ const Users: React.FC = () => {
 
   // Filter out the currently logged-in user
   const filteredUsers = users.filter(u => u.id !== user?.id);
-  const sortedUsers = users.slice().sort((a, b) => getComparator(order, orderBy)(a, b));
+  const sortedUsers = filteredUsers.slice().sort((a, b) => getComparator(order, orderBy)(a, b));
   const paginatedUsers = sortedUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleExpand = (userId: number) => {
@@ -323,7 +323,7 @@ const Users: React.FC = () => {
       <TablePagination
         rowsPerPageOptions={[5, 10, 25, 100]}
         component="div"
-        count={users.length}
+        count={filteredUsers.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
