@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -13,13 +13,16 @@ import {
   CardHeader,
   Divider,
   Avatar,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import ImageUpload from '../../components/ImageUpload';
 import apiClient from '../../services/apiClient';
+import JSEncrypt from 'jsencrypt';
 
 // --- Embedded User Service ---
 const userService = {
@@ -41,6 +44,14 @@ const AddUser: React.FC = () => {
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [publicKey, setPublicKey] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/auth/public-key')
+      .then(res => res.text())
+      .then(setPublicKey);
+  }, []);
 
   const handleFileChange = (file: File | null) => {
     if (file) {
@@ -60,6 +71,12 @@ const AddUser: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const encryptPassword = (password: string) => {
+    const encryptor = new JSEncrypt();
+    encryptor.setPublicKey(publicKey);
+    return encryptor.encrypt(password) || '';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -74,7 +91,12 @@ const AddUser: React.FC = () => {
       const data = new FormData();
       data.append('username', formData.username);
       data.append('email', formData.email);
-      data.append('password', formData.password);
+      let passwordToSend = formData.password;
+      if (publicKey) {
+        const encrypted = encryptPassword(formData.password);
+        if (encrypted) passwordToSend = encrypted;
+      }
+      data.append('password', passwordToSend);
       data.append('role', formData.role);
       if (imageFile) {
         data.append('image', imageFile);
@@ -153,10 +175,19 @@ const AddUser: React.FC = () => {
                       fullWidth
                       label="Password"
                       name="password"
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={handleChange}
                       required
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setShowPassword((s) => !s)} edge="end">
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>

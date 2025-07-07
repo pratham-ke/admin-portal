@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -16,6 +16,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import JSEncrypt from 'jsencrypt';
 
 interface LoginFormData {
   email: string;
@@ -37,9 +38,16 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [publicKey, setPublicKey] = useState('');
 
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/auth/public-key')
+      .then(res => res.text())
+      .then(setPublicKey);
+  }, []);
 
   // Validation functions
   const validateEmail = (email: string): string | undefined => {
@@ -79,6 +87,12 @@ const Login: React.FC = () => {
     }
   };
 
+  const encryptPassword = (password: string) => {
+    const encryptor = new JSEncrypt();
+    encryptor.setPublicKey(publicKey);
+    return encryptor.encrypt(password) || '';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -90,7 +104,12 @@ const Login: React.FC = () => {
     setGeneralError('');
 
     try {
-      await login(formData.email, formData.password);
+      let passwordToSend = formData.password;
+      if (publicKey) {
+        const encrypted = encryptPassword(formData.password);
+        if (encrypted) passwordToSend = encrypted;
+      }
+      await login(formData.email, passwordToSend);
       navigate('/dashboard');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 

@@ -5,6 +5,10 @@ const { Op } = require('sequelize');
 const { validateSignup, validateLogin, validateForgotPassword, validateResetPassword } = require('../validators/authValidator');
 const { sendPasswordResetEmail } = require('../services/emailService');
 const { generateResetToken, verifyResetToken } = require('../services/tokenService');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const privateKey = fs.readFileSync(path.join(__dirname, '../config/private.pem'), 'utf8');
 
 /**
  * Register a new user
@@ -93,6 +97,20 @@ const login = async (req, res) => {
     }
 
     const { email, password } = req.body;
+    let decryptedPassword = password;
+    try {
+      // Try to decrypt (if not encrypted, will fail and use plain)
+      const buffer = Buffer.from(password, 'base64');
+      decryptedPassword = crypto.privateDecrypt(
+        {
+          key: privateKey,
+          padding: crypto.constants.RSA_PKCS1_PADDING,
+        },
+        buffer
+      ).toString('utf8');
+    } catch (e) {
+      // If decryption fails, assume password is plain (for backward compatibility)
+    }
 
     // Find user
     const user = await User.findOne({ where: { email } });
@@ -112,7 +130,7 @@ const login = async (req, res) => {
     }
 
     // Validate password
-    const isValidPassword = await user.validatePassword(password);
+    const isValidPassword = await user.validatePassword(decryptedPassword);
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,

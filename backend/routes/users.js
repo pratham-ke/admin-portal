@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
+const fs = require('fs');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -187,6 +189,42 @@ router.patch('/:id/toggle-active', auth, adminAuth, async (req, res) => {
       message: 'Error toggling user status',
       error: error.message,
     });
+  }
+});
+
+// Change password (authenticated user)
+router.post('/change-password', auth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    // Find the user
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Decrypt passwords if needed (RSA)
+    const privateKey = fs.readFileSync(path.join(__dirname, '../config/private.pem'), 'utf8');
+    let decryptedCurrent = currentPassword;
+    let decryptedNew = newPassword;
+    try {
+      decryptedCurrent = crypto.privateDecrypt({ key: privateKey, padding: crypto.constants.RSA_PKCS1_PADDING }, Buffer.from(currentPassword, 'base64')).toString('utf8');
+    } catch (e) {}
+    try {
+      decryptedNew = crypto.privateDecrypt({ key: privateKey, padding: crypto.constants.RSA_PKCS1_PADDING }, Buffer.from(newPassword, 'base64')).toString('utf8');
+    } catch (e) {}
+
+    // Validate current password
+    const isValid = await user.validatePassword(decryptedCurrent);
+    if (!isValid) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Update to new password
+    user.password = decryptedNew;
+    await user.save();
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error changing password', error: error.message });
   }
 });
 

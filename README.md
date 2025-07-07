@@ -141,6 +141,31 @@ npm start
 
 The frontend will run on `http://localhost:3000`
 
+## Password Security: RSA Encryption
+
+This project uses RSA encryption to secure passwords in transit between the frontend and backend.
+
+### How it works
+- The backend generates an RSA key pair (private and public keys).
+- The public key is served to the frontend at `/api/auth/public-key`.
+- The frontend encrypts passwords with the public key before sending them to the backend (for login, add user, and change password).
+- The backend decrypts the password using the private key before authentication or updating.
+
+### Key Generation (one-time setup)
+1. Make sure you have OpenSSL installed (or use an online tool for development).
+2. From the project root, run:
+   ```bash
+   mkdir -p backend/config
+   openssl genrsa -out backend/config/private.pem 2048
+   openssl rsa -in backend/config/private.pem -pubout -out backend/config/public.pem
+   ```
+3. The private key (`private.pem`) must remain secret and only on the backend. The public key (`public.pem`) is safe to share.
+
+### Notes
+- If the keys are missing, the backend will not start.
+- For production, always generate a new, secure key pair and keep the private key safe.
+- The frontend will fallback to sending plain passwords if the public key is not available (for backward compatibility).
+
 ## Default Admin Credentials
 
 After running the seed script, you can log in with:

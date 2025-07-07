@@ -8,6 +8,8 @@ const {
   logout 
 } = require('../controllers/authController');
 const { auth } = require('../middleware/auth');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * @route   POST /api/auth/login
@@ -43,5 +45,12 @@ router.get('/me', auth, getCurrentUser);
  * @access  Private
  */
 router.post('/logout', auth, logout);
+
+// Serve public key for frontend encryption
+router.get('/public-key', (req, res) => {
+  const pubKeyPath = path.join(__dirname, '../config/public.pem');
+  const pubKey = fs.readFileSync(pubKeyPath, 'utf8');
+  res.type('text/plain').send(pubKey);
+});
 
 module.exports = router; 
