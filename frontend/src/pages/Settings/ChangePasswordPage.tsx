@@ -67,10 +67,16 @@ const ChangePasswordPage: React.FC = () => {
 
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 500, mx: 'auto', mt: 2 }}>
-      <Button startIcon={<ArrowBackIcon />} sx={{ mb: 2 }} onClick={() => navigate(-1)}>
-        Back
-      </Button>
-      <Typography variant="h4" gutterBottom>Change Password</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" gutterBottom>Change Password</Typography>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+        >
+          Back
+        </Button>
+      </Box>
       <Paper sx={{ p: 3 }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}

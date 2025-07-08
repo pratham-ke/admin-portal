@@ -134,7 +134,7 @@ const login = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials2'
+        message: 'Invalid credentials'
       });
     }
 

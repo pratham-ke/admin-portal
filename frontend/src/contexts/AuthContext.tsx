@@ -68,8 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (token: string, password: string, confirmPassword: string) => {
     try {
-      // Assuming confirmPassword is handled in the component
-      await authService.resetPassword(password, token);
+      await authService.resetPassword(token, password, confirmPassword);
     } catch (error) {
       throw error;
     }

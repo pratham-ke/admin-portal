@@ -27,20 +27,22 @@ if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
  */
 const sendPasswordResetEmail = async (email, resetToken) => {
   try {
-    // In development, we'll just log the email details
-    // In production, you would integrate with a real email service
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-    
-    console.log('=== PASSWORD RESET EMAIL ===');
-    console.log(`To: ${email}`);
-    console.log(`Subject: Password Reset Request`);
-    console.log(`Reset URL: ${resetUrl}`);
-    console.log('=============================');
-
-    // For development purposes, we'll simulate email sending
-    // In production, replace this with actual email service integration
-    await simulateEmailSending(email, resetUrl);
-
+    const html = getPasswordResetTemplate(resetUrl);
+    const subject = 'Password Reset Request';
+    if (transporter) {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: email,
+        subject,
+        html,
+      });
+      console.log(`Password reset email sent to ${email}`);
+    } else {
+      // Fallback to simulation if SMTP not configured
+      await simulateEmailSending(email, resetUrl);
+      console.log('SMTP not configured, simulated password reset email.');
+    }
     return true;
   } catch (error) {
     console.error('Error sending password reset email:', error);

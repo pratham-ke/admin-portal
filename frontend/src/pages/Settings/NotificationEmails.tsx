@@ -59,12 +59,18 @@ const NotificationEmails: React.FC = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Button startIcon={<ArrowBackIcon />} sx={{ mb: 2 }} onClick={() => navigate(-1)}>
-        Back
-      </Button>
-      <Typography variant="h4" gutterBottom>Notification Emails</Typography>
-      <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
+    <Box sx={{ flexGrow: 1, maxWidth: 500, mx: 'auto', mt: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" gutterBottom>Notification Emails</Typography>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+        >
+          Back
+        </Button>
+      </Box>
+      <Paper sx={{ p: 3 }}>
         <Typography sx={{ mb: 2 }}>Enter one or more email addresses to receive contact form notifications.</Typography>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
