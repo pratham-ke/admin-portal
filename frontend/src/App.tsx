@@ -39,10 +39,38 @@ import ErrorPage from "./pages/Settings/ErrorPage";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#1976d2",
+      main: "#488010",
+      contrastText: "#fff",
+      light: "#5fa91a",
+      dark: "#2e570a",
     },
     secondary: {
-      main: "#dc004e",
+      main: "#b2d235", // a lighter green for secondary actions
+      contrastText: "#fff",
+    },
+  },
+  components: {
+    MuiSwitch: {
+      styleOverrides: {
+        switchBase: {
+          '&.Mui-checked': {
+            color: '#488010',
+          },
+          '&.Mui-checked + .MuiSwitch-track': {
+            backgroundColor: '#488010',
+          },
+        },
+        track: {
+          backgroundColor: '#b2d235',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
     },
   },
 });

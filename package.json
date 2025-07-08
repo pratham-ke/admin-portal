@@ -10,6 +10,7 @@
     "install-all": "npm install && cd frontend && npm install"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.2.6",
     "axios": "^1.10.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

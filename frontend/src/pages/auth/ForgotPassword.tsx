@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -14,6 +14,7 @@ import {
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '@mui/material/styles';
+import '@fontsource/poppins';
 
 interface ForgotPasswordFormData {
   email: string;
@@ -77,128 +78,193 @@ const ForgotPassword: React.FC = () => {
 
     try {
       await forgotPassword(formData.email);
-      setSuccessMessage('If an account with that email exists, a password reset link has been sent to your email.');
+      setSuccessMessage('Password reset link has been sent to your email.');
+      setFormData({ email: '' });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.errors?.join(', ') || 
-                          'An error occurred while processing your request';
+      let errorMessage = 'Something went wrong. Please try again later.';
+      const backendMsg = err.response?.data?.message || '';
+      const backendErrors = err.response?.data?.errors || [];
+      if (backendMsg.toLowerCase().includes('valid user')) {
+        errorMessage = 'Please enter valid user.';
+        setErrors({ email: errorMessage });
+      } else if (backendMsg.toLowerCase().includes('valid email address')) {
+        errorMessage = 'Please enter a valid email address.';
+        setErrors({ email: errorMessage });
+      } else if (backendMsg.toLowerCase().includes('email is required')) {
+        errorMessage = 'Email is required.';
+        setErrors({ email: errorMessage });
+      } else if (backendMsg.toLowerCase().includes('validation error') && backendErrors.length > 0) {
+        // Map Joi validation errors to field error
+        const firstError = backendErrors[0];
+        if (firstError.toLowerCase().includes('valid email address')) {
+          setErrors({ email: 'Please enter a valid email address.' });
+        } else if (firstError.toLowerCase().includes('email is required')) {
+          setErrors({ email: 'Email is required.' });
+        } else {
+          setGeneralError(errorMessage);
+        }
+      } else {
       setGeneralError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
   return (
     <>
       <GlobalStyles styles={{
-        html: { height: '100%', overflow: 'hidden', background: 'none', margin: 0, padding: 0 },
-        body: { height: '100%', overflow: 'hidden', background: 'none', margin: 0, padding: 0, border: 'none' },
-        '#root': { height: '100%' },
+        html: { minHeight: '100%', background: '#F3F7FD', fontFamily: 'Poppins, sans-serif', overflowX: 'hidden', width: '100vw' },
+        body: { minHeight: '100%', background: '#F3F7FD', fontFamily: 'Poppins, sans-serif', overflowX: 'hidden', width: '100vw' },
+        '#root': { minHeight: '100%' },
       }} />
       <Box
         sx={{
           minHeight: '100vh',
           width: '100vw',
-          background: '#1A2238',
+          maxHeight: '100vh',
+          maxWidth: '100vw',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          position: 'fixed',
+          inset: 0,
+          background: 'url(/group-bg.png) center center / cover no-repeat',
           overflow: 'hidden',
+          m: 0,
+          p: 0,
           border: 'none',
         }}
       >
-        <Container component="main" maxWidth="sm" sx={{ zIndex: 1 }}>
+        {/* Left decorative image */}
+        <Box
+          component="img"
+          src="/login-left.png"
+          alt="login left design"
+          sx={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '90%',
+            maxHeight: '100vh',
+            width: 'auto',
+            zIndex: 0,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        />
+        {/* Right decorative image */}
+        <Box
+          component="img"
+          src="/login-right.png"
+          alt="login right design"
+          sx={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            height: '35%',
+            maxHeight: '100vh',
+            width: 'auto',
+            zIndex: 0,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        />
+        <Container component="main" maxWidth={false} sx={{ zIndex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', p: 0 }}>
           <Box
             sx={{
-              marginTop: 8,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <Paper
-              elevation={3}
-              sx={{
-                padding: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                width: '100%',
-                bgcolor: 'rgba(26,34,56,0.95)',
-                borderRadius: 4,
-                boxShadow: 8,
-              }}
+              width: '100%',
+              maxWidth: 480,
+              bgcolor: '#fff',
+              borderRadius: '16px',
+              boxShadow: '0px 12px 40px 0px rgba(167, 221, 157, 0.12)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+              justifyContent: 'center',
+              p: { xs: 4, sm: 6, md: 8 },
+              m: 0,
+              border: 'none',
+          }}
+        >
+            <img src="/kernel-logo.png" alt="Kernelequity Logo" style={{ width: 180, maxWidth: '60vw', marginBottom: 8, display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
+            <Typography variant="h5" sx={{ fontWeight: 600, color: '#454545', mt: 1, mb: 2, textAlign: 'center', fontFamily: 'Poppins, sans-serif', fontSize: { xs: 18, sm: 20, md: 22 }, width: '100%' }}>
+            Forgot Password
+              <Box sx={{ width: 60, height: 4, bgcolor: '#488010', borderRadius: 2, mx: 'auto', mt: 1 }} />
+          </Typography>
+            <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%', mt: 2 }}>
+          {successMessage && (
+            <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
+          {generalError && (
+            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+              {generalError}
+            </Alert>
+          )}
+              <Typography sx={{ color: errors.email ? '#d32f2f' : '#777', fontWeight: 400, fontSize: { xs: 14, sm: 16 }, mb: 0.5, fontFamily: 'Poppins, sans-serif' }}>Email</Typography>
+            <TextField
+              fullWidth
+                placeholder="Enter your email"
+                variant="outlined"
+              value={formData.email}
+              onChange={handleInputChange}
+              error={!!errors.email}
+              helperText={errors.email}
+              disabled={isLoading}
+                sx={{
+                  mb: 2,
+                  bgcolor: '#fff',
+                  borderRadius: '4px',
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: '#DFDFDF' },
+                    '&:hover fieldset': { borderColor: '#488010' },
+                    '&.Mui-focused fieldset': { borderColor: '#488010' },
+                    '&.Mui-error fieldset': { borderColor: '#d32f2f' },
+                  },
+                  '& input': { color: errors.email ? '#d32f2f' : '#777', fontFamily: 'Poppins, sans-serif', fontSize: { xs: 14, sm: 16 } },
+                  '& .MuiFormHelperText-root': { color: '#d32f2f', fontWeight: 500 },
+                }}
+                InputProps={{ style: { color: '#777' } }}
+              />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+                sx={{
+                  mt: 1,
+                  height: 48,
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: { xs: 15, sm: 16 },
+                  background: '#488010',
+                  color: '#fff',
+                  boxShadow: '0px 8px 7.5px -1px rgba(0,0,0,0.09)',
+                  textTransform: 'none',
+                  fontFamily: 'Poppins, sans-serif',
+                  '&:hover': { background: '#36610c' },
+                }}
+              disabled={isLoading}
             >
-              <img src="/kernel-logo.png" alt="Kernelequity Logo" style={{ width: 130, marginBottom: 32, marginTop: 8 }} />
-              <Typography component="h1" variant="h4" gutterBottom sx={{ color: '#fff' }}>
-                Forgot Password
+                {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
+            </Button>
+              <Box sx={{ textAlign: 'center', mt: 2 }}>
+                <Typography variant="body2" sx={{ color: '#777', fontFamily: 'Poppins, sans-serif', fontSize: { xs: 12, sm: 14 } }}>
+                Remember your password?{' '}
+                  <Link component={RouterLink} to="/login" variant="body2" sx={{ color: '#488010', fontWeight: 500, fontFamily: 'Poppins, sans-serif', textDecoration: 'none', fontSize: { xs: 12, sm: 14 } }}>
+                  Sign in here
+                </Link>
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, color: '#fff', textAlign: 'center' }}>
-                Enter your email address and we'll send you a link to reset your password.
-              </Typography>
-              {successMessage && (
-                <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
-                  {successMessage}
-                </Alert>
-              )}
-              {generalError && (
-                <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-                  {generalError}
-                </Alert>
-              )}
-              <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  disabled={isLoading}
-                  sx={{ bgcolor: '#232B47', borderRadius: 1, '& .MuiInputBase-input': { color: '#fff' }, input: { color: '#fff' }, label: { color: '#fff' } }}
-                  InputLabelProps={{ style: { color: '#9DAAF2' } }}
-                />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{
-                    mt: 3,
-                    mb: 2,
-                    height: 48,
-                    borderRadius: 3,
-                    fontWeight: 600,
-                    fontSize: 18,
-                    background: 'linear-gradient(90deg, #FF6A3D 0%, #F4DB7D 100%)',
-                    color: '#232B47',
-                    boxShadow: '0 2px 8px 0 rgba(255,106,61,0.15)',
-                    textTransform: 'none',
-                    '&:hover': { background: 'linear-gradient(90deg, #F4DB7D 0%, #FF6A3D 100%)' },
-                  }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    'Send Reset Link'
-                  )}
-                </Button>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="body2" sx={{ color: '#9DAAF2' }}>
-                    Remember your password?{' '}
-                    <Link component={RouterLink} to="/login" variant="body2" sx={{ color: '#9DAAF2' }}>
-                      Sign in here
-                    </Link>
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
+            </Box>
+          </Box>
           </Box>
         </Container>
       </Box>

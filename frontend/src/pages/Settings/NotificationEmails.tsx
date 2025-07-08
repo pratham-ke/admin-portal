@@ -67,8 +67,8 @@ const NotificationEmails: React.FC = () => {
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
         >
-          Back
-        </Button>
+        Back
+      </Button>
       </Box>
       <Paper sx={{ p: 3 }}>
         <Typography sx={{ mb: 2 }}>Enter one or more email addresses to receive contact form notifications.</Typography>

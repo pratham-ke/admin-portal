@@ -27,10 +27,33 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <DialogContentText>{description}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel} color="inherit" variant="outlined">
+        <Button
+          onClick={onCancel}
+          variant="outlined"
+          sx={{
+            borderColor: '#488010',
+            color: '#488010',
+            '&:hover': {
+              borderColor: '#36610c',
+              color: '#36610c',
+              backgroundColor: 'rgba(72, 128, 16, 0.04)',
+            },
+          }}
+        >
           {cancelButtonText}
         </Button>
-        <Button onClick={onConfirm} color="error" variant="contained" autoFocus>
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          autoFocus
+          sx={{
+            backgroundColor: '#488010',
+            color: '#fff',
+            '&:hover': {
+              backgroundColor: '#36610c',
+            },
+          }}
+        >
           {confirmButtonText}
         </Button>
       </DialogActions>

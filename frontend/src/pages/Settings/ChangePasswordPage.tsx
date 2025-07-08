@@ -74,8 +74,8 @@ const ChangePasswordPage: React.FC = () => {
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
         >
-          Back
-        </Button>
+        Back
+      </Button>
       </Box>
       <Paper sx={{ p: 3 }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}

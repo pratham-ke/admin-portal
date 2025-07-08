@@ -55,7 +55,7 @@ const signup = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || 'your_jwt_secret_key_here',
-      { expiresIn: '24h' }
+      { expiresIn: '7d' }
     );
 
     res.status(201).json({
@@ -91,7 +91,7 @@ const login = async (req, res) => {
     if (error) {
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
+        message: error.details[0]?.message || 'Validation error',
         errors: error.details.map(detail => detail.message)
       });
     }
@@ -117,7 +117,7 @@ const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials1'
+        message: 'Please enter valid details.'
       });
     }
 
@@ -134,7 +134,7 @@ const login = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Incorrect password.'
       });
     }
 
@@ -142,7 +142,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || 'your_jwt_secret_key_here',
-      { expiresIn: '24h' }
+      { expiresIn: '7d' }
     );
 
     res.json({
@@ -220,10 +220,9 @@ const forgotPassword = async (req, res) => {
     // Find user
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      // Don't reveal if user exists or not for security
-      return res.json({
-        success: true,
-        message: 'If an account with that email exists, a password reset link has been sent.'
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter valid user.'
       });
     }
 

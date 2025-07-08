@@ -86,6 +86,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           boxSizing: 'border-box',
           transition: 'width 0.3s ease',
           overflowX: 'hidden',
+          background: '#fff',
+          color: '#222',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
         },
       }}
     >
@@ -100,25 +105,39 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           py: 0,
           cursor: 'pointer',
           width: '100%',
-          background: 'white',
+          background: '#fff',
           borderBottom: '1px solid #eee',
         }}
         onClick={() => navigate('/dashboard')}
       >
-        <img
-          src={process.env.PUBLIC_URL + '/kernel-logo.png'}
-          alt="Kernel Logo"
-          style={{
-            height: 32,
-            width: isCollapsed ? 32 : 100,
-            objectFit: 'contain',
-            transition: 'width 0.3s, height 0.3s',
-            display: 'block'
-          }}
-        />
+        {isCollapsed ? (
+          <img
+            src={process.env.PUBLIC_URL + '/kernel-icon.png'}
+            alt="Kernel Icon"
+            style={{
+              height: 32,
+              width: 32,
+              objectFit: 'contain',
+              transition: 'width 0.3s, height 0.3s',
+              display: 'block',
+            }}
+          />
+        ) : (
+          <img
+            src={process.env.PUBLIC_URL + '/kernel-logo.png'}
+            alt="Kernel Logo"
+            style={{
+              height: 32,
+              width: 100,
+              objectFit: 'contain',
+              transition: 'width 0.3s, height 0.3s',
+              display: 'block',
+            }}
+          />
+        )}
       </Box>
       {/* End Logo Section */}
-      <Box sx={{ overflow: 'hidden', mt: 0 }}>
+      <Box sx={{ flex: 1, overflow: 'hidden', mt: 0, display: 'flex', flexDirection: 'column' }}>
         <List>
           {filteredMenuItems.map((item) => {
             // Highlight as active if the current path starts with the item's path
@@ -134,12 +153,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                   onClick={() => handleItemClick(item.path)}
                   sx={{
                     cursor: 'pointer',
-                    backgroundColor: isActive ? 'primary.light' : 'transparent',
-                    color: isActive ? 'primary.contrastText' : 'inherit',
+                    backgroundColor: isActive ? '#488010' : 'transparent',
+                    color: isActive ? '#fff' : '#222',
                     '&:hover': {
-                      backgroundColor: isActive ? 'primary.main' : 'action.hover',
-                      transform: 'translateX(4px)',
-                      transition: 'all 0.2s ease',
+                      backgroundColor: '#488010',
+                      color: '#fff',
+                    },
+                    '&:hover .sidebar-icon, &:focus .sidebar-icon': {
+                      color: '#fff',
                     },
                     transition: 'all 0.2s ease',
                     borderRadius: 1,
@@ -148,9 +169,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                   }}
                 >
                   <ListItemIcon 
+                    className="sidebar-icon"
                     sx={{ 
-                      color: isActive ? 'primary.contrastText' : 'inherit',
+                      color: isActive ? '#fff' : '#488010',
                       minWidth: isCollapsed ? 40 : 56,
+                      transition: 'color 0.2s',
                     }}
                   >
                     {item.icon}
@@ -170,9 +193,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             );
           })}
         </List>
-        
+      </Box>
+      {/* Logout at the bottom */}
+      <Box sx={{ mb: 2 }}>
         <Divider sx={{ my: 2 }} />
-        
         <List>
           <Tooltip 
             title={isCollapsed ? 'Logout' : ''} 
@@ -187,11 +211,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                 background: 'transparent',
                 width: '100%',
                 textAlign: 'left',
-                '&:hover': {
-                  backgroundColor: 'error.light',
-                  color: 'error.contrastText',
-                  transform: 'translateX(4px)',
-                  transition: 'all 0.2s ease',
+                color: '#222',
+                '&:hover, &:focus': {
+                  backgroundColor: '#488010',
+                  color: '#fff',
+                },
+                '&:hover .logout-icon, &:focus .logout-icon': {
+                  color: '#fff',
                 },
                 transition: 'all 0.2s ease',
                 borderRadius: 1,
@@ -199,24 +225,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                 mb: 0.5,
               }}
             >
-              <ListItemIcon 
-                sx={{ 
-                  color: 'inherit',
+              <ListItemIcon
+                className="logout-icon"
+                sx={{
                   minWidth: isCollapsed ? 40 : 56,
+                  color: '#488010',
+                  transition: 'color 0.2s',
                 }}
               >
                 <LogoutIcon />
               </ListItemIcon>
-              {!isCollapsed ? (
-                <ListItemText 
-                  primary="Logout" 
-                  sx={{
-                    '& .MuiListItemText-primary': {
-                      fontWeight: 500,
-                    },
-                  }}
-                />
-              ) : null}
+              {!isCollapsed ? <ListItemText primary="Logout" /> : null}
             </ListItem>
           </Tooltip>
         </List>
