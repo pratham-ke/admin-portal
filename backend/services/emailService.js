@@ -40,7 +40,7 @@ const sendPasswordResetEmail = async (email, resetToken) => {
       console.log(`Password reset email sent to ${email}`);
     } else {
       // Fallback to simulation if SMTP not configured
-      await simulateEmailSending(email, resetUrl);
+    await simulateEmailSending(email, resetUrl);
       console.log('SMTP not configured, simulated password reset email.');
     }
     return true;
