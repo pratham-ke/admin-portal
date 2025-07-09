@@ -10,7 +10,7 @@ const ChangePasswordPage: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<{ currentPassword?: string; newPassword?: string; confirmPassword?: string }>({});
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
@@ -31,16 +31,45 @@ const ChangePasswordPage: React.FC = () => {
     return encryptor.encrypt(password) || '';
   };
 
+  // Validation functions
+  const validateCurrentPassword = (value: string): string | undefined => {
+    if (!value) return 'Current password is required.';
+    return undefined;
+  };
+  const validateNewPassword = (value: string): string | undefined => {
+    if (!value) return 'New password is required.';
+    if (value.length < 8) return 'Password must be at least 8 characters.';
+    if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter.';
+    if (!/[a-z]/.test(value)) return 'Password must contain at least one lowercase letter.';
+    if (!/[0-9]/.test(value)) return 'Password must contain at least one number.';
+    if (!/[!@#$%^&*]/.test(value)) return 'Password must contain at least one special character (!@#$%^&*).';
+    return undefined;
+  };
+  const validateConfirmPassword = (value: string): string | undefined => {
+    if (!value) return 'Please confirm your new password.';
+    if (value !== newPassword) return 'Passwords do not match.';
+    return undefined;
+  };
+  const validateForm = (): boolean => {
+    const newErrors: { currentPassword?: string; newPassword?: string; confirmPassword?: string } = {};
+    newErrors.currentPassword = validateCurrentPassword(currentPassword);
+    newErrors.newPassword = validateNewPassword(newPassword);
+    newErrors.confirmPassword = validateConfirmPassword(confirmPassword);
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error !== undefined);
+  };
+  const handleInputChange = (field: 'currentPassword' | 'newPassword' | 'confirmPassword') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (field === 'currentPassword') setCurrentPassword(value);
+    if (field === 'newPassword') setNewPassword(value);
+    if (field === 'confirmPassword') setConfirmPassword(value);
+    setErrors(prev => ({ ...prev, [field]: undefined }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setSuccess('');
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('All fields are required.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError('New passwords do not match.');
+    if (!validateForm()) {
       return;
     }
     setLoading(true);
@@ -58,8 +87,29 @@ const ChangePasswordPage: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setErrors({});
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to change password.');
+      // Map backend errors to field-level errors
+      const backendMessage = err.response?.data?.message || '';
+      const backendErrors = err.response?.data?.errors || [];
+      let newErrors: { currentPassword?: string; newPassword?: string; confirmPassword?: string } = {};
+      if (backendMessage.toLowerCase().includes('current')) {
+        newErrors.currentPassword = backendMessage;
+      } else if (backendMessage.toLowerCase().includes('new password')) {
+        newErrors.newPassword = backendMessage;
+      } else if (backendMessage.toLowerCase().includes('confirm')) {
+        newErrors.confirmPassword = backendMessage;
+      }
+      backendErrors.forEach((msg: string) => {
+        if (msg.toLowerCase().includes('current')) newErrors.currentPassword = msg;
+        if (msg.toLowerCase().includes('new password')) newErrors.newPassword = msg;
+        if (msg.toLowerCase().includes('confirm')) newErrors.confirmPassword = msg;
+      });
+      // Fallback: if no field error, show as newPassword error
+      if (!newErrors.currentPassword && !newErrors.newPassword && !newErrors.confirmPassword && backendMessage) {
+        newErrors.newPassword = backendMessage;
+      }
+      setErrors(newErrors);
     } finally {
       setLoading(false);
     }
@@ -78,17 +128,17 @@ const ChangePasswordPage: React.FC = () => {
       </Button>
       </Box>
       <Paper sx={{ p: 3 }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <TextField
             label="Current Password"
             type={showCurrent ? 'text' : 'password'}
             fullWidth
-            required
             value={currentPassword}
-            onChange={e => setCurrentPassword(e.target.value)}
+            onChange={handleInputChange('currentPassword')}
             sx={{ mb: 2 }}
+            error={!!errors.currentPassword}
+            helperText={errors.currentPassword}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -103,10 +153,11 @@ const ChangePasswordPage: React.FC = () => {
             label="New Password"
             type={showNew ? 'text' : 'password'}
             fullWidth
-            required
             value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
+            onChange={handleInputChange('newPassword')}
             sx={{ mb: 2 }}
+            error={!!errors.newPassword}
+            helperText={errors.newPassword}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -121,10 +172,11 @@ const ChangePasswordPage: React.FC = () => {
             label="Confirm New Password"
             type={showConfirm ? 'text' : 'password'}
             fullWidth
-            required
             value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
+            onChange={handleInputChange('confirmPassword')}
             sx={{ mb: 3 }}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -135,7 +187,7 @@ const ChangePasswordPage: React.FC = () => {
               ),
             }}
           />
-          <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+          <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading} sx={{ fontWeight: 600, fontSize: 16, background: '#488010', '&:hover': { background: '#36610c' } }}>
             {loading ? 'Changing...' : 'Change Password'}
           </Button>
         </form>

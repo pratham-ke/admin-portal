@@ -12,6 +12,11 @@ import {
   CardHeader,
   Divider,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -51,6 +56,7 @@ const EditPortfolio: React.FC = () => {
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [status, setStatus] = useState('Active');
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -58,9 +64,10 @@ const EditPortfolio: React.FC = () => {
       try {
         setLoading(true);
         const response = await portfolioService.getItem(id);
-        const { name, website, category, year, overview, image } = response.data;
+        const { name, website, category, year, overview, image, status: fetchedStatus } = response.data;
         setFormData({ name, website, category, year: year.toString() });
         setOverview(overview);
+        setStatus(fetchedStatus || 'Active');
         if (image) {
             setImagePreview(getImageUrl(image));
         }
@@ -92,6 +99,10 @@ const EditPortfolio: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleStatusChange = (event: SelectChangeEvent<string>) => {
+    setStatus(event.target.value as string);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -115,6 +126,7 @@ const EditPortfolio: React.FC = () => {
       data.append('category', formData.category);
       data.append('year', formData.year);
       data.append('overview', overview);
+      data.append('status', status);
 
       if (imageFile) {
         data.append('image', imageFile);
@@ -209,6 +221,19 @@ const EditPortfolio: React.FC = () => {
                   onChange={handleChange}
                   sx={{ mt: 3 }}
                 />
+                <FormControl fullWidth sx={{ mt: 3 }}>
+                  <InputLabel id="status-label">Project Status</InputLabel>
+                  <Select
+                    labelId="status-label"
+                    id="status"
+                    value={status}
+                    label="Project Status"
+                    onChange={handleStatusChange}
+                  >
+                    <MenuItem value="Active">Active</MenuItem>
+                    <MenuItem value="Exit">Exit</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} md={8} sx={{ minHeight: 500, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>Overview</Typography>

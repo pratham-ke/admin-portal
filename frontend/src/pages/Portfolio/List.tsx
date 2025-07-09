@@ -36,6 +36,7 @@ const portfolioService = {
   getItems: () => apiClient.get('/v1/portfolio?admin=true'),
   deleteItem: (id: string) => apiClient.delete(`/v1/portfolio/${id}`),
   toggleItemStatus: (id: string) => apiClient.patch(`/v1/portfolio/${id}/toggle-status`),
+  toggleVisibility: (id: string) => apiClient.patch(`/v1/portfolio/${id}/toggle-visibility`),
 };
 // --------------------------------
 
@@ -45,6 +46,7 @@ interface PortfolioItem {
   image: string;
   category: string;
   status: 'Active' | 'Exit';
+  isVisible: boolean;
 }
 
 const DEFAULT_IMAGE = 'https://ui-avatars.com/api/?name=Portfolio&background=random&size=48';
@@ -132,6 +134,22 @@ const Portfolio: React.FC = () => {
         setError('Failed to toggle status');
         // Revert on error
         setItems(originalItems);
+    }
+  };
+
+  const handleToggleVisibility = async (id: number) => {
+    // Optimistic update
+    const originalItems = [...items];
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.id === id ? { ...item, isVisible: !item.isVisible } : item
+      )
+    );
+    try {
+      await portfolioService.toggleVisibility(String(id));
+    } catch (error) {
+      setError('Failed to toggle visibility');
+      setItems(originalItems);
     }
   };
 
@@ -241,15 +259,8 @@ const Portfolio: React.FC = () => {
                   Category
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={orderBy === 'status' ? order : false}>
-                <TableSortLabel
-                  active={orderBy === 'status'}
-                  direction={orderBy === 'status' ? order : 'asc'}
-                  onClick={() => handleRequestSort('status')}
-                >
-                  Status
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Visible</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -264,10 +275,23 @@ const Portfolio: React.FC = () => {
                 <TableCell>{item.category}</TableCell>
                 <TableCell>
                   <Switch
-                    checked={item.status === 'Active'}
-                    onChange={() => handleToggleStatus(item.id)}
+                    checked={item.isVisible}
+                    onChange={() => handleToggleVisibility(item.id)}
                     color="primary"
                   />
+                </TableCell>
+                <TableCell>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '2px 12px',
+                    borderRadius: 16,
+                    background: item.status === 'Active' ? '#4caf50' : '#b71c1c',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: 13,
+                  }}>
+                    {item.status === 'Active' ? 'ACTIVE' : 'EXIT'}
+                  </span>
                 </TableCell>
                 <TableCell align="right">
                   <IconButton onClick={() => navigate(`/portfolio/view/${item.id}`)}>

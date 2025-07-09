@@ -33,7 +33,7 @@ router.get('/', require('../middleware/auth').authOptional, async (req, res) => 
     let where = {};
     // If ?admin=true and user is authenticated, return all
     if (!(req.query.admin === 'true' && req.user)) {
-      where.status = 'Active';
+      where.isVisible = true;
     }
     const portfolio = await Portfolio.findAll({
       where,
@@ -136,6 +136,24 @@ router.patch('/:id/toggle-status', auth, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: 'Error toggling portfolio item status',
+      error: error.message,
+    });
+  }
+});
+
+// Toggle portfolio item visibility (all authenticated users)
+router.patch('/:id/toggle-visibility', auth, async (req, res) => {
+  try {
+    const item = await Portfolio.findByPk(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: 'Portfolio item not found' });
+    }
+    item.isVisible = !item.isVisible;
+    await item.save();
+    res.json({ id: item.id, isVisible: item.isVisible });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error toggling portfolio item visibility',
       error: error.message,
     });
   }

@@ -12,6 +12,11 @@ import {
   CardHeader,
   Divider,
   Avatar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +48,7 @@ const AddPortfolio: React.FC = () => {
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [status, setStatus] = useState('Active');
 
   const handleFileChange = (file: File | null) => {
     if (file) {
@@ -62,6 +68,10 @@ const AddPortfolio: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleStatusChange = (event: SelectChangeEvent<string>) => {
+    setStatus(event.target.value as string);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -79,6 +89,7 @@ const AddPortfolio: React.FC = () => {
       data.append('category', formData.category);
       data.append('year', formData.year);
       data.append('overview', overview);
+      data.append('status', status);
       
       if (imageFile) {
         data.append('image', imageFile);
@@ -164,6 +175,19 @@ const AddPortfolio: React.FC = () => {
                   onChange={handleChange}
                   sx={{ mt: 3 }}
                 />
+                <FormControl fullWidth sx={{ mt: 3 }}>
+                  <InputLabel id="status-label">Project Status</InputLabel>
+                  <Select
+                    labelId="status-label"
+                    id="status"
+                    value={status}
+                    label="Project Status"
+                    onChange={handleStatusChange}
+                  >
+                    <MenuItem value="Active">Active</MenuItem>
+                    <MenuItem value="Exit">Exit</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} md={8} sx={{ minHeight: 500, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>Overview</Typography>

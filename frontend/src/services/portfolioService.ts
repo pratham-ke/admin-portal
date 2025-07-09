@@ -50,6 +50,9 @@ const portfolioService = {
   toggleStatus: (id: string) => {
     return apiClient.patch(`/v1/portfolio/${id}/toggle-status`);
   },
+  toggleVisibility: (id: string) => {
+    return apiClient.patch(`/v1/portfolio/${id}/toggle-visibility`);
+  },
 };
 
 export default portfolioService; 

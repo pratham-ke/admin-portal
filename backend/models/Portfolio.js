@@ -47,6 +47,11 @@ module.exports = (sequelize) => {
         type: DataTypes.ENUM('Exit', 'Active'),
         defaultValue: 'Active',
       },
+      isVisible: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
       deleted_at: {
         type: DataTypes.DATE,
         allowNull: true,
