@@ -1,3 +1,8 @@
+// ResetPassword.tsx
+// Reset password page for the admin portal.
+// Allows users to reset their password using a token from email.
+// Handles form validation, password encryption, and reset logic.
+
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -28,6 +33,8 @@ interface FormErrors {
 }
 
 const ResetPassword: React.FC = () => {
+  // --- State management ---
+  // State for password fields, errors, loading, etc.
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<ResetPasswordFormData>({
     password: '',
@@ -41,6 +48,8 @@ const ResetPassword: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [token, setToken] = useState<string>('');
 
+  // --- Fetching public key ---
+  // Fetches the public key for password encryption on mount
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
 
@@ -53,7 +62,8 @@ const ResetPassword: React.FC = () => {
     }
   }, [searchParams]);
 
-  // Validation functions
+  // --- Validation functions ---
+  // ... validation logic ...
   const validatePassword = (password: string): string | undefined => {
     if (!password) return 'Password is required';
     if (password.length < 8) return 'Password must be at least 8 characters long';
@@ -78,6 +88,8 @@ const ResetPassword: React.FC = () => {
     return !Object.values(newErrors).some(error => error !== undefined);
   };
 
+  // --- Input change handlers ---
+  // ... handler logic ...
   const handleInputChange = (field: keyof ResetPasswordFormData) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -95,6 +107,11 @@ const ResetPassword: React.FC = () => {
     }
   };
 
+  // --- Password encryption ---
+  // ... encryption logic ...
+
+  // --- Form submission ---
+  // Handles the form submission to reset the password
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -126,6 +143,8 @@ const ResetPassword: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the reset password form and feedback messages
   if (!token) {
     return (
       <>

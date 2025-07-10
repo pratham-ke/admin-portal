@@ -1,7 +1,13 @@
+// ErrorPage.tsx
+// Error page for the admin portal.
+// Displays a user-friendly error message for unexpected errors or 404s.
+
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
 
 const ErrorPage: React.FC = () => {
+  // --- Render ---
+  // Renders the error message UI
   return (
     <Box sx={{ textAlign: 'center', mt: 8 }}>
       <Typography variant="h2" color="error" gutterBottom>
@@ -20,4 +26,5 @@ const ErrorPage: React.FC = () => {
   );
 };
 
-export default ErrorPage; 
+export default ErrorPage;
+export {}; 

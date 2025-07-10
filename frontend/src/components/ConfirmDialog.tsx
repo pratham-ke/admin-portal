@@ -1,3 +1,8 @@
+// ConfirmDialog.tsx
+// Component for showing a confirmation dialog/modal for critical user actions (e.g., delete, logout).
+// Accepts props for open state, title, description, confirm/cancel button text, and callbacks.
+// Usage: Used in lists and sidebars for confirming destructive or important actions.
+
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 

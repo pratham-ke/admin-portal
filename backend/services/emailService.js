@@ -1,17 +1,18 @@
 /**
- * Email Service for sending password reset emails
- * In production, you would use services like SendGrid, AWS SES, or Nodemailer
+ * Email Service for sending password reset emails and other notifications.
+ * In production, you would use services like SendGrid, AWS SES, or Nodemailer.
+ * This module provides functions for sending and simulating emails for various user actions.
  */
 
 const nodemailer = require('nodemailer');
 
-// Modular transporter setup
+// Modular transporter setup for sending emails via SMTP
 let transporter = null;
 if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
-    secure: process.env.SMTP_SECURE === 'true',
+    secure: process.env.SMTP_SECURE === 'true', // Use TLS if specified
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -20,17 +21,19 @@ if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
 }
 
 /**
- * Send password reset email
+ * Send password reset email to a user.
  * @param {string} email - User's email address
  * @param {string} resetToken - Password reset token
  * @returns {Promise<void>}
  */
 const sendPasswordResetEmail = async (email, resetToken) => {
   try {
+    // Construct the password reset URL for the frontend
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
     const html = getPasswordResetTemplate(resetUrl);
     const subject = 'Password Reset Request';
     if (transporter) {
+      // Send email using configured SMTP transporter
       await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: email,
@@ -40,24 +43,26 @@ const sendPasswordResetEmail = async (email, resetToken) => {
       console.log(`Password reset email sent to ${email}`);
     } else {
       // Fallback to simulation if SMTP not configured
-    await simulateEmailSending(email, resetUrl);
+      await simulateEmailSending(email, resetUrl);
       console.log('SMTP not configured, simulated password reset email.');
     }
     return true;
   } catch (error) {
+    // Log and handle errors
     console.error('Error sending password reset email:', error);
     throw new Error('Failed to send password reset email');
   }
 };
 
 /**
- * Send welcome email for new user registration
+ * Send welcome email for new user registration.
  * @param {string} email - User's email address
  * @param {string} username - User's username
  * @returns {Promise<void>}
  */
 const sendWelcomeEmail = async (email, username) => {
   try {
+    // Simulate sending a welcome email (for development)
     console.log('=== WELCOME EMAIL ===');
     console.log(`To: ${email}`);
     console.log(`Subject: Welcome to Admin Portal`);
@@ -68,21 +73,24 @@ const sendWelcomeEmail = async (email, username) => {
 
     return true;
   } catch (error) {
+    // Log and handle errors
     console.error('Error sending welcome email:', error);
     throw new Error('Failed to send welcome email');
   }
 };
 
 /**
- * Send email verification
+ * Send email verification to a user.
  * @param {string} email - User's email address
  * @param {string} verificationToken - Email verification token
  * @returns {Promise<void>}
  */
 const sendEmailVerification = async (email, verificationToken) => {
   try {
+    // Construct the email verification URL for the frontend
     const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
     
+    // Simulate sending an email verification (for development)
     console.log('=== EMAIL VERIFICATION ===');
     console.log(`To: ${email}`);
     console.log(`Subject: Verify Your Email Address`);
@@ -93,13 +101,14 @@ const sendEmailVerification = async (email, verificationToken) => {
 
     return true;
   } catch (error) {
+    // Log and handle errors
     console.error('Error sending email verification:', error);
     throw new Error('Failed to send email verification');
   }
 };
 
 /**
- * Simulate email sending (for development)
+ * Simulate email sending (for development/testing purposes).
  * @param {string} email - Recipient email
  * @param {string} url - Action URL (for password reset, verification, etc.)
  * @param {string} type - Email type (reset, welcome, verification)
@@ -116,7 +125,7 @@ const simulateEmailSending = async (email, url, type = 'reset') => {
 };
 
 /**
- * Email template for password reset
+ * Email template for password reset.
  * @param {string} resetUrl - Password reset URL
  * @returns {string} HTML email template
  */
@@ -144,7 +153,7 @@ const getPasswordResetTemplate = (resetUrl) => {
 };
 
 /**
- * Email template for welcome email
+ * Email template for welcome email.
  * @param {string} username - User's username
  * @returns {string} HTML email template
  */
@@ -171,7 +180,7 @@ const getWelcomeTemplate = (username) => {
 };
 
 /**
- * Email template for email verification
+ * Email template for email verification.
  * @param {string} verificationUrl - Email verification URL
  * @returns {string} HTML email template
  */

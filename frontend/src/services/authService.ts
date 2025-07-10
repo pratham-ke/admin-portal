@@ -1,3 +1,8 @@
+// authService.ts
+// Service module for authentication-related API calls in the admin portal.
+// Provides functions for login, fetching current user, password reset, etc.
+// Usage: Used by auth context and pages for authentication flows.
+
 import apiClient from './apiClient';
 
 export const login = async (credentials: any) => {

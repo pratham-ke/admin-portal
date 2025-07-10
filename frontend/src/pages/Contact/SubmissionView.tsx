@@ -1,3 +1,8 @@
+// SubmissionView.tsx
+// Contact form submission detail page for the admin portal.
+// Displays detailed information about a single contact form submission.
+// Fetches submission data from the API and presents it in a readable format.
+
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Card, CardHeader, CardContent, Divider, Button, CircularProgress, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -5,12 +10,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import contactService from '../../services/contactService';
 
 const ContactSubmissionView: React.FC = () => {
+  // --- State management ---
+  // State for submission data, loading, error, etc.
   const { id } = useParams<{ id: string }>();
   const [submission, setSubmission] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // --- Data fetching ---
+  // Fetches the submission data from the API
   useEffect(() => {
     const fetchDetail = async () => {
       try {
@@ -25,6 +34,8 @@ const ContactSubmissionView: React.FC = () => {
     fetchDetail();
   }, [id]);
 
+  // --- Render ---
+  // Renders the submission details
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
   if (error) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><Alert severity="error">{error}</Alert></Box>;
   if (!submission) return null;
@@ -62,4 +73,5 @@ const ContactSubmissionView: React.FC = () => {
   );
 };
 
-export default ContactSubmissionView; 
+export default ContactSubmissionView;
+export {}; 

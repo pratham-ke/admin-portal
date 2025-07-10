@@ -1,3 +1,8 @@
+// Edit.tsx
+// Portfolio item editing page for the admin portal.
+// Allows editing of existing portfolio item details and image.
+// Handles data fetching, form validation, submission, and feedback.
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
@@ -26,6 +31,7 @@ import ImageUpload from '../../components/ImageUpload';
 import apiClient from '../../services/apiClient';
 
 // --- Embedded Portfolio Service ---
+// Handles API calls for portfolio item operations.
 const portfolioService = {
   getItem: (id: string) => apiClient.get(`/v1/portfolio/${id}`),
   updateItem: (id: string, data: FormData) => apiClient.put(`/v1/portfolio/${id}`, data, {
@@ -41,6 +47,8 @@ const getImageUrl = (image: string | undefined): string | null => {
 };
 
 const EditPortfolio: React.FC = () => {
+  // --- State management ---
+  // State for form fields, error messages, image upload, etc.
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const editor = useRef(null);
@@ -58,6 +66,8 @@ const EditPortfolio: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [status, setStatus] = useState('Active');
 
+  // --- Data fetching ---
+  // Fetches the portfolio item data to populate the form
   useEffect(() => {
     const fetchItem = async () => {
       if (!id) return;
@@ -81,6 +91,8 @@ const EditPortfolio: React.FC = () => {
     fetchItem();
   }, [id]);
 
+  // --- Input/file change handlers ---
+  // Handles file selection for image upload.
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -95,14 +107,18 @@ const EditPortfolio: React.FC = () => {
     }
   };
 
+  // Handles form field changes.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handles status selection change.
   const handleStatusChange = (event: SelectChangeEvent<string>) => {
     setStatus(event.target.value as string);
   };
 
+  // --- Form submission ---
+  // Handles the form submission for updating the portfolio item.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -143,6 +159,8 @@ const EditPortfolio: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the portfolio item editing form and feedback messages
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>

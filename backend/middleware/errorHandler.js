@@ -5,20 +5,21 @@
 
 /**
  * Custom error class for application errors
+ * Used to create operational errors with status codes and messages
  */
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
-    this.isOperational = true;
+    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error'; // Set status based on code
+    this.isOperational = true; // Mark as operational error
 
-    Error.captureStackTrace(this, this.constructor);
+    Error.captureStackTrace(this, this.constructor); // Capture stack trace
   }
 }
 
 /**
- * Handle Sequelize validation errors
+ * Handle Sequelize validation errors (e.g., invalid input)
  * @param {Error} err - Sequelize error
  * @returns {Object} Formatted error response
  */
@@ -29,7 +30,7 @@ const handleSequelizeValidationError = (err) => {
 };
 
 /**
- * Handle Sequelize unique constraint errors
+ * Handle Sequelize unique constraint errors (e.g., duplicate values)
  * @param {Error} err - Sequelize error
  * @returns {Object} Formatted error response
  */
@@ -40,7 +41,7 @@ const handleSequelizeUniqueConstraintError = (err) => {
 };
 
 /**
- * Handle JWT errors
+ * Handle JWT errors (invalid token)
  * @param {Error} err - JWT error
  * @returns {Object} Formatted error response
  */
@@ -68,7 +69,8 @@ const handleCastErrorDB = (err) => {
 };
 
 /**
- * Main error handler middleware
+ * Main error handler middleware for Express
+ * Handles known and unknown errors, formats response based on environment
  * @param {Error} err - Error object
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -147,7 +149,7 @@ const notFound = (req, res, next) => {
 };
 
 /**
- * Async error wrapper to catch async errors
+ * Async error wrapper to catch async errors in route handlers
  * @param {Function} fn - Async function to wrap
  * @returns {Function} Wrapped function with error handling
  */

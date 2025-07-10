@@ -1,3 +1,8 @@
+// Submissions.tsx
+// Contact form submissions list page for the admin portal.
+// Displays all contact form submissions in a table with options to view or delete.
+// Fetches submission data from the API and manages user actions.
+
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -38,6 +43,8 @@ interface Submission {
 type Order = 'asc' | 'desc';
 
 const ContactSubmissions: React.FC = () => {
+  // --- State management ---
+  // State for submissions data, loading, error, etc.
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [total, setTotal] = useState(0);
   const [order, setOrder] = useState<Order>('desc');
@@ -50,6 +57,8 @@ const ContactSubmissions: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // --- Data fetching ---
+  // Fetches the list of contact submissions from the API
   const fetchSubmissions = async () => {
     try {
       const params: any = {
@@ -72,6 +81,8 @@ const ContactSubmissions: React.FC = () => {
     // eslint-disable-next-line
   }, [page, rowsPerPage, emailFilter, dateFrom, dateTo]);
 
+  // --- Handlers for actions (view, delete, etc.) ---
+  // Helper function to compare two values for sorting
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     const aValue = a[orderBy];
     const bValue = b[orderBy];
@@ -85,6 +96,7 @@ const ContactSubmissions: React.FC = () => {
     return 0;
   }
 
+  // Function to get a comparator for sorting based on order and orderBy
   function getComparator<Key extends keyof Submission>(
     order: Order,
     orderBy: Key
@@ -94,19 +106,23 @@ const ContactSubmissions: React.FC = () => {
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
+  // Sorts the submissions based on the current order and orderBy
   const sortedSubmissions = submissions
     .slice()
     .sort(getComparator(order, orderBy));
 
+  // Handler for sorting column headers
   const handleRequestSort = (property: keyof Submission) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
+  // Handler for changing pagination page
   const handleChangePage = (_: unknown, newPage: number) =>
     setPage(newPage);
 
+  // Handler for changing rows per page
   const handleChangeRowsPerPage = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -114,6 +130,7 @@ const ContactSubmissions: React.FC = () => {
     setPage(0);
   };
 
+  // Handler for exporting submissions to CSV
   const handleExport = async () => {
     try {
       const params: any = {
@@ -135,6 +152,8 @@ const ContactSubmissions: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the submissions table and action buttons
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

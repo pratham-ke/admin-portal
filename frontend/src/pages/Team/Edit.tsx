@@ -1,3 +1,8 @@
+// Edit.tsx
+// Team member editing page for the admin portal.
+// Allows editing of existing team member details and image.
+// Handles data fetching, form validation, submission, and feedback.
+
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -23,6 +28,7 @@ import apiClient from '../../services/apiClient';
 import JoditEditor from 'jodit-react';
 
 // --- Embedded Team Service ---
+// Handles API calls for team member data and updates.
 const teamService = {
   getMember: (id: string) => apiClient.get(`/v1/team/${id}`),
   updateMember: (id: string, data: FormData) => apiClient.put(`/v1/team/${id}`, data, {
@@ -37,7 +43,9 @@ const getImageUrl = (image: string | undefined): string | null => {
     return `http://localhost:5000/uploads/team/${image}`;
 };
 
-const EditTeam: React.FC = () => {
+const EditTeamMember: React.FC = () => {
+  // --- State management ---
+  // State for form fields, error messages, image upload, etc.
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -54,6 +62,8 @@ const EditTeam: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // --- Data fetching ---
+  // Fetches the team member data to populate the form
   useEffect(() => {
     const fetchMember = async () => {
       try {
@@ -80,6 +90,8 @@ const EditTeam: React.FC = () => {
     fetchMember();
   }, [id, token]);
 
+  // --- Input/file change handlers ---
+  // Handles file selection for image upload.
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -94,10 +106,13 @@ const EditTeam: React.FC = () => {
     }
   };
 
+  // Handles form field changes.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- Form submission ---
+  // Handles the form submission for updating team member data.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -132,6 +147,8 @@ const EditTeam: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the team member editing form and feedback messages
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -231,4 +248,4 @@ const EditTeam: React.FC = () => {
   );
 };
 
-export default EditTeam; 
+export default EditTeamMember; 

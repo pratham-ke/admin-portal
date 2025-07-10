@@ -1,3 +1,8 @@
+// Add.tsx
+// Portfolio item creation page for the admin portal.
+// Provides a form for adding new portfolio items, including details and image upload.
+// Handles form validation, submission, and feedback.
+
 import React, { useState, useRef } from 'react';
 import {
   Box,
@@ -27,6 +32,7 @@ import ImageUpload from '../../components/ImageUpload';
 import apiClient from '../../services/apiClient';
 
 // --- Embedded Portfolio Service ---
+// Handles API calls for adding new portfolio items.
 const portfolioService = {
   addItem: (data: FormData) => apiClient.post('/v1/portfolio', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -35,6 +41,8 @@ const portfolioService = {
 // --------------------------------
 
 const AddPortfolio: React.FC = () => {
+  // --- State management ---
+  // State for form fields, error messages, image upload, etc.
   const navigate = useNavigate();
   const { token } = useAuth();
   const editor = useRef(null);
@@ -50,6 +58,8 @@ const AddPortfolio: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [status, setStatus] = useState('Active');
 
+  // --- Input/file change handlers ---
+  // Handles file selection for image upload.
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -64,14 +74,18 @@ const AddPortfolio: React.FC = () => {
     }
   };
 
+  // Handles form field changes.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handles status selection change.
   const handleStatusChange = (event: SelectChangeEvent<string>) => {
     setStatus(event.target.value as string);
   };
 
+  // --- Form submission ---
+  // Handles the form submission for adding a new portfolio item.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -105,6 +119,8 @@ const AddPortfolio: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the portfolio item creation form and feedback messages.
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

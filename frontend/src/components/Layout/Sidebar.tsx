@@ -1,3 +1,8 @@
+// Sidebar.tsx
+// Sidebar navigation component for the admin portal.
+// Provides navigation links to all main sections of the admin portal.
+// Usage: Used as part of the main layout to allow users to navigate between pages.
+
 import React, { useState } from 'react';
 import {
   Drawer,

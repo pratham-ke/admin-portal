@@ -1,3 +1,8 @@
+// Edit.tsx
+// Blog post editing page for the admin portal.
+// Allows editing of existing blog post details and image.
+// Handles data fetching, form validation, submission, and feedback.
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
@@ -11,7 +16,6 @@ import {
   CardContent,
   CardHeader,
   Divider,
-  Avatar,
   CircularProgress,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
@@ -38,6 +42,8 @@ const getImageUrl = (image: string | undefined): string | null => {
 };
 
 const EditBlog: React.FC = () => {
+  // --- State management ---
+  // State for form fields, error messages, image upload, etc.
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -53,6 +59,8 @@ const EditBlog: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // --- Data fetching ---
+  // Fetches the blog post data to populate the form
   useEffect(() => {
     const fetchPost = async () => {
       if (!id) return;
@@ -75,6 +83,8 @@ const EditBlog: React.FC = () => {
     fetchPost();
   }, [id, token]);
 
+  // --- Input/file change handlers ---
+  // ... handler logic ...
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -93,6 +103,8 @@ const EditBlog: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- Form submission ---
+  // ... submit logic ...
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -126,6 +138,8 @@ const EditBlog: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the blog post editing form and feedback messages
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>

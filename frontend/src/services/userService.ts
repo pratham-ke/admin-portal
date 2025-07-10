@@ -1,3 +1,8 @@
+// userService.ts
+// Service module for user-related API calls in the admin portal.
+// Provides functions for CRUD operations on users.
+// Usage: Used by user pages for managing user data.
+
 import apiClient from './apiClient';
 
 export const getUsers = async () => {

@@ -1,3 +1,7 @@
+// SettingsPage.tsx
+// Main settings page for the admin portal.
+// Provides access to various settings sections and navigation.
+
 import React from 'react';
 import { Box, Typography, Card, CardActionArea, CardContent, Grid, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +11,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import EmailIcon from '@mui/icons-material/Email';
 
 const SettingsPage: React.FC = () => {
+  // --- Render ---
+  // Renders the settings navigation and content
   const navigate = useNavigate();
 
   const options = [
@@ -50,4 +56,4 @@ const SettingsPage: React.FC = () => {
   );
 };
 
-export default SettingsPage; 
+export default SettingsPage;

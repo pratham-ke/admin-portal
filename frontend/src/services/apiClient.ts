@@ -1,3 +1,8 @@
+// apiClient.ts
+// Axios instance for making API requests in the admin portal.
+// Centralizes API base URL, headers, and interceptors for authentication and error handling.
+// Usage: Used by all service modules to communicate with the backend API.
+
 import axios from 'axios';
 import { toast } from 'react-toastify';
 

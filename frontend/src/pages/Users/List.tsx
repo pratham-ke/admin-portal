@@ -1,3 +1,8 @@
+// List.tsx
+// User list page for the admin portal.
+// Displays all users in a table with options to view, edit, or delete.
+// Fetches user data from the API and manages user actions.
+
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -63,7 +68,7 @@ const Users: React.FC = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState('');
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<keyof User>('username');
   const [rowsPerPage, setRowsPerPage] = useState(() => {
@@ -80,6 +85,8 @@ const Users: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
 
+  // --- Data fetching ---
+  // Fetches the list of users from the API
   const fetchUsers = async () => {
     try {
       const response = await userService.getUsers();
@@ -94,6 +101,7 @@ const Users: React.FC = () => {
     fetchUsers();
   }, []);
 
+  // --- Handlers for actions (edit, delete, etc.) ---
   const handleDeleteClick = (id: number) => {
     setDeleteUserId(id);
     setDeleteDialogOpen(true);
@@ -194,6 +202,8 @@ const Users: React.FC = () => {
     handleMenuClose();
   };
 
+  // --- Render ---
+  // Renders the users table and action buttons
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

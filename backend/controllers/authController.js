@@ -1,3 +1,8 @@
+// authController.js
+// Controller for authentication-related routes in the backend of the admin portal.
+// Handles user signup, login, password reset, and current user profile.
+// Used by routes/auth.js to process authentication requests.
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
@@ -17,9 +22,10 @@ const privateKey = fs.readFileSync(path.join(__dirname, '../config/private.pem')
  */
 const signup = async (req, res) => {
   try {
-    // Validate input
+    // Validate input using the signup validator
     const { error } = validateSignup(req.body);
     if (error) {
+      // Respond with validation errors
       return res.status(400).json({
         success: false,
         message: 'Validation error',
@@ -29,7 +35,7 @@ const signup = async (req, res) => {
 
     const { username, email, password } = req.body;
 
-    // Check if user already exists
+    // Check if a user with the same email or username already exists
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [{ email }, { username }],
@@ -37,13 +43,14 @@ const signup = async (req, res) => {
     });
 
     if (existingUser) {
+      // Respond if user already exists
       return res.status(400).json({
         success: false,
         message: 'User with this email or username already exists',
       });
     }
 
-    // Create new user
+    // Create a new user record
     const user = await User.create({
       username,
       email,
@@ -51,13 +58,14 @@ const signup = async (req, res) => {
       role: 'user' // Default role
     });
 
-    // Generate JWT token
+    // Generate JWT token for authentication
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || 'your_jwt_secret_key_here',
       { expiresIn: '7d' }
     );
 
+    // Respond with user info and token
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -70,6 +78,7 @@ const signup = async (req, res) => {
       },
     });
   } catch (error) {
+    // Log and handle errors
     console.error('Signup error:', error);
     res.status(500).json({
       success: false,
@@ -86,9 +95,10 @@ const signup = async (req, res) => {
  */
 const login = async (req, res) => {
   try {
-    // Validate input
+    // Validate input using the login validator
     const { error } = validateLogin(req.body);
     if (error) {
+      // Respond with validation errors
       return res.status(400).json({
         success: false,
         message: error.details[0]?.message || 'Validation error',
@@ -99,7 +109,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
     let decryptedPassword = password;
     try {
-      // Try to decrypt (if not encrypted, will fail and use plain)
+      // Try to decrypt the password (if not encrypted, will fail and use plain)
       const buffer = Buffer.from(password, 'base64');
       decryptedPassword = crypto.privateDecrypt(
         {
@@ -112,9 +122,10 @@ const login = async (req, res) => {
       // If decryption fails, assume password is plain (for backward compatibility)
     }
 
-    // Find user
+    // Find user by email
     const user = await User.findOne({ where: { email } });
     if (!user) {
+      // Respond if user is not found
       return res.status(401).json({
         success: false,
         message: 'Please enter valid details.'
@@ -123,28 +134,31 @@ const login = async (req, res) => {
 
     // Check if user is active
     if (!user.isActive) {
+      // Respond if user is inactive
       return res.status(403).json({
         success: false,
         message: 'User is not active, please contact the admin.'
       });
     }
 
-    // Validate password
+    // Validate password using the model's method
     const isValidPassword = await user.validatePassword(decryptedPassword);
     if (!isValidPassword) {
+      // Respond if password is incorrect
       return res.status(401).json({
         success: false,
         message: 'Incorrect password.'
       });
     }
 
-    // Generate JWT token
+    // Generate JWT token for authentication
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || 'your_jwt_secret_key_here',
       { expiresIn: '7d' }
     );
 
+    // Respond with user info and token
     res.json({
       success: true,
       message: 'Login successful',
@@ -157,6 +171,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
+    // Log and handle errors
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
@@ -173,22 +188,26 @@ const login = async (req, res) => {
  */
 const getCurrentUser = async (req, res) => {
   try {
+    // Find user by primary key, exclude password from attributes
     const user = await User.findByPk(req.user.id, {
       attributes: { exclude: ['password'] },
     });
 
     if (!user) {
+      // Respond if user is not found
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
+    // Respond with user info
     res.json({
       success: true,
       user
     });
   } catch (error) {
+    // Log and handle errors
     console.error('Get current user error:', error);
     res.status(500).json({
       success: false,

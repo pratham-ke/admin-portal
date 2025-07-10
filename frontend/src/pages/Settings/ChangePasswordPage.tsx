@@ -1,3 +1,8 @@
+// ChangePasswordPage.tsx
+// Change password page for the admin portal.
+// Allows users to change their password with strong validation and feedback.
+// Handles form validation, password encryption, and submission.
+
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, TextField, Button, Alert, IconButton, InputAdornment } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -7,6 +12,8 @@ import JSEncrypt from 'jsencrypt';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const ChangePasswordPage: React.FC = () => {
+  // --- State management ---
+  // State for password fields, error messages, loading, etc.
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,23 +26,29 @@ const ChangePasswordPage: React.FC = () => {
   const [publicKey, setPublicKey] = useState('');
   const navigate = useNavigate();
 
+  // --- Fetching public key ---
+  // Fetches the public key for password encryption on mount
   useEffect(() => {
     fetch('http://localhost:5000/api/auth/public-key')
       .then(res => res.text())
       .then(setPublicKey);
   }, []);
 
+  // --- Password encryption ---
+  // Encrypts the password using the public key
   const encryptPassword = (password: string) => {
     const encryptor = new JSEncrypt();
     encryptor.setPublicKey(publicKey);
     return encryptor.encrypt(password) || '';
   };
 
-  // Validation functions
+  // --- Validation functions ---
+  // Validates the current password field.
   const validateCurrentPassword = (value: string): string | undefined => {
     if (!value) return 'Current password is required.';
     return undefined;
   };
+  // Validates the new password field.
   const validateNewPassword = (value: string): string | undefined => {
     if (!value) return 'New password is required.';
     if (value.length < 8) return 'Password must be at least 8 characters.';
@@ -45,11 +58,13 @@ const ChangePasswordPage: React.FC = () => {
     if (!/[!@#$%^&*]/.test(value)) return 'Password must contain at least one special character (!@#$%^&*).';
     return undefined;
   };
+  // Validates the confirm password field.
   const validateConfirmPassword = (value: string): string | undefined => {
     if (!value) return 'Please confirm your new password.';
     if (value !== newPassword) return 'Passwords do not match.';
     return undefined;
   };
+  // Validates the entire form.
   const validateForm = (): boolean => {
     const newErrors: { currentPassword?: string; newPassword?: string; confirmPassword?: string } = {};
     newErrors.currentPassword = validateCurrentPassword(currentPassword);
@@ -58,6 +73,7 @@ const ChangePasswordPage: React.FC = () => {
     setErrors(newErrors);
     return !Object.values(newErrors).some(error => error !== undefined);
   };
+  // Handles input changes for password fields.
   const handleInputChange = (field: 'currentPassword' | 'newPassword' | 'confirmPassword') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (field === 'currentPassword') setCurrentPassword(value);
@@ -66,6 +82,8 @@ const ChangePasswordPage: React.FC = () => {
     setErrors(prev => ({ ...prev, [field]: undefined }));
   };
 
+  // --- Form submission ---
+  // Handles the form submission to change the password.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccess('');
@@ -115,6 +133,8 @@ const ChangePasswordPage: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the change password form and feedback messages.
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 500, mx: 'auto', mt: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>

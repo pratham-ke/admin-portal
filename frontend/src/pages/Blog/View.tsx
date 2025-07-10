@@ -1,6 +1,11 @@
+// View.tsx
+// Blog post detail page for the admin portal.
+// Displays detailed information about a single blog post.
+// Fetches blog post data from the API and presents it in a readable format.
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, Paper, Button, CircularProgress, Avatar, Card, CardHeader, CardContent, Divider } from '@mui/material';
+import { Box, Typography, Paper, Button, CircularProgress, Card, CardHeader, CardContent, Divider } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,7 +18,9 @@ const getImageUrl = (image: string | undefined) => {
   return `http://localhost:5000/uploads/blog/${image}`;
 };
 
-const BlogView: React.FC = () => {
+const BlogPostView: React.FC = () => {
+  // --- State management ---
+  // State for blog post data, loading, error, etc.
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -21,6 +28,8 @@ const BlogView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // --- Data fetching ---
+  // Fetches the blog post data from the API
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -37,6 +46,8 @@ const BlogView: React.FC = () => {
     fetchPost();
   }, [id, token]);
 
+  // --- Render ---
+  // Renders the blog post details
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
   if (error) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><Typography color="error">{error}</Typography></Box>;
   if (!post) return null;
@@ -93,4 +104,5 @@ const BlogView: React.FC = () => {
   );
 };
 
-export default BlogView; 
+export default BlogPostView;
+export {}; 

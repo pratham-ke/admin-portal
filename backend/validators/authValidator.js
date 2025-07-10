@@ -1,7 +1,12 @@
+// authValidator.js
+// Joi validation schemas and functions for authentication-related data (signup, login, password reset, etc.).
+// Used by authController.js and other backend modules to validate user input.
+
 const Joi = require('joi');
 
 /**
  * Validation schema for user signup
+ * Enforces username, email, password, and confirmPassword rules
  */
 const signupSchema = Joi.object({
   username: Joi.string()
@@ -42,6 +47,7 @@ const signupSchema = Joi.object({
 
 /**
  * Validation schema for user login
+ * Enforces email and password rules
  */
 const loginSchema = Joi.object({
   email: Joi.string()
@@ -60,6 +66,7 @@ const loginSchema = Joi.object({
 
 /**
  * Validation schema for forgot password
+ * Enforces email rule
  */
 const forgotPasswordSchema = Joi.object({
   email: Joi.string()
@@ -73,6 +80,7 @@ const forgotPasswordSchema = Joi.object({
 
 /**
  * Validation schema for reset password
+ * Enforces token, password, and confirmPassword rules
  */
 const resetPasswordSchema = Joi.object({
   token: Joi.string()
@@ -100,6 +108,7 @@ const resetPasswordSchema = Joi.object({
 
 /**
  * Validation schema for change password
+ * Enforces currentPassword, newPassword, and confirmPassword rules
  */
 const changePasswordSchema = Joi.object({
   currentPassword: Joi.string()
@@ -127,6 +136,7 @@ const changePasswordSchema = Joi.object({
 
 /**
  * Validation schema for update profile
+ * Enforces username and email rules (optional)
  */
 const updateProfileSchema = Joi.object({
   username: Joi.string()

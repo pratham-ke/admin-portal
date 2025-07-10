@@ -1,3 +1,8 @@
+// View.tsx
+// Portfolio item detail page for the admin portal.
+// Displays detailed information about a single portfolio item.
+// Fetches portfolio item data from the API and presents it in a readable format.
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Paper, Button, CircularProgress, Avatar, Card, CardHeader, CardContent, Divider } from '@mui/material';
@@ -13,7 +18,9 @@ const getImageUrl = (image: string | undefined) => {
   return `http://localhost:5000/uploads/portfolio/${image}`;
 };
 
-const PortfolioView: React.FC = () => {
+const PortfolioItemView: React.FC = () => {
+  // --- State management ---
+  // State for portfolio item data, loading, error, etc.
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -21,6 +28,8 @@ const PortfolioView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // --- Data fetching ---
+  // Fetches the portfolio item data from the API
   useEffect(() => {
     const fetchItem = async () => {
       try {
@@ -37,6 +46,8 @@ const PortfolioView: React.FC = () => {
     fetchItem();
   }, [id, token]);
 
+  // --- Render ---
+  // Renders the portfolio item details
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
   if (error) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><Typography color="error">{error}</Typography></Box>;
   if (!item) return null;
@@ -87,4 +98,5 @@ const PortfolioView: React.FC = () => {
   );
 };
 
-export default PortfolioView; 
+export default PortfolioItemView;
+export {}; 

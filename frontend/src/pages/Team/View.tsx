@@ -1,3 +1,8 @@
+// View.tsx
+// Team member detail page for the admin portal.
+// Displays detailed information about a single team member.
+// Fetches team member data from the API and presents it in a readable format.
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Paper, Button, CircularProgress, Avatar, Card, CardHeader, CardContent, Divider } from '@mui/material';
@@ -14,7 +19,9 @@ const getImageUrl = (image: string | undefined) => {
   return `http://localhost:5000/uploads/team/${image}`;
 };
 
-const TeamView: React.FC = () => {
+const TeamMemberView: React.FC = () => {
+  // --- State management ---
+  // State for team member data, loading, error, etc.
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -22,6 +29,8 @@ const TeamView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // --- Data fetching ---
+  // Fetches the team member data from the API
   useEffect(() => {
     const fetchMember = async () => {
       try {
@@ -38,6 +47,8 @@ const TeamView: React.FC = () => {
     fetchMember();
   }, [id, token]);
 
+  // --- Render ---
+  // Renders the team member details
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
   if (error) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><Typography color="error">{error}</Typography></Box>;
   if (!member) return null;
@@ -103,4 +114,5 @@ const TeamView: React.FC = () => {
   );
 };
 
-export default TeamView; 
+export default TeamMemberView;
+export {}; 

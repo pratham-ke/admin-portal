@@ -1,3 +1,8 @@
+// List.tsx
+// Blog posts list page for the admin portal.
+// Displays all blog posts in a table with options to view, edit, or delete.
+// Fetches blog data from the API and manages user actions.
+
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -59,6 +64,8 @@ const BLOG_ROWS_PER_PAGE_KEY = 'blogRowsPerPage';
 const BLOG_PAGE_KEY = 'blogPage';
 
 const Blog: React.FC = () => {
+  // --- State management ---
+  // State for blog data, loading, error, etc.
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const { token } = useAuth();
@@ -78,6 +85,8 @@ const Blog: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePostId, setDeletePostId] = useState<number | null>(null);
 
+  // --- Data fetching ---
+  // Fetches the list of blog posts from the API
   const fetchPosts = async () => {
     try {
       const response = await blogService.getPosts();
@@ -94,12 +103,15 @@ const Blog: React.FC = () => {
     }
   }, [token]);
 
+  // --- Handlers for actions (edit, delete, etc.) ---
+  // Handler for opening the delete confirmation dialog
   const handleDeleteClick = (id: number) => {
     setDeletePostId(id);
     setDeleteDialogOpen(true);
     handleMenuClose();
   };
 
+  // Handler for confirming the deletion of a blog post
   const handleDeleteConfirm = async () => {
     if (deletePostId !== null) {
       try {
@@ -113,11 +125,13 @@ const Blog: React.FC = () => {
     setDeletePostId(null);
   };
 
+  // Handler for canceling the deletion of a blog post
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setDeletePostId(null);
   };
 
+  // Handler for toggling the status of a blog post (published/draft)
   const handleToggleStatus = async (id: number) => {
     try {
       await blogService.togglePostStatus(String(id));
@@ -133,17 +147,20 @@ const Blog: React.FC = () => {
     }
   };
 
+  // Handler for sorting blog posts
   const handleRequestSort = (property: keyof BlogPost) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
+  // Handler for changing the page of blog posts
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
     localStorage.setItem(BLOG_PAGE_KEY, newPage.toString());
   };
 
+  // Handler for changing the number of rows per page
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value, 10);
     setRowsPerPage(value);
@@ -152,6 +169,7 @@ const Blog: React.FC = () => {
     localStorage.setItem(BLOG_PAGE_KEY, '0');
   };
 
+  // Helper function for sorting blog posts
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     const aValue = a[orderBy];
     const bValue = b[orderBy];
@@ -167,30 +185,37 @@ const Blog: React.FC = () => {
 
   type Order = 'asc' | 'desc';
 
+  // Helper function for getting a comparator based on sort order
   function getComparator<Key extends keyof BlogPost>(order: Order, orderBy: Key): (a: BlogPost, b: BlogPost) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
+  // Memoized sorted posts for pagination
   const sortedPosts = React.useMemo(() => {
     if (!posts) return [];
     const comparator = getComparator(order, orderBy);
     return [...posts].sort(comparator);
-  }, [posts, order, orderBy]);
+  }, [posts, order, orderBy, getComparator]);
 
+  // Paginated posts for the current page
   const paginatedPosts = sortedPosts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // Handler for opening the menu for a specific blog post
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, postId: number) => {
     setAnchorEl(event.currentTarget);
     setMenuPostId(postId);
   };
 
+  // Handler for closing the menu
   const handleMenuClose = () => {
     setAnchorEl(null);
     setMenuPostId(null);
   };
 
+  // --- Render ---
+  // Renders the blog posts table and action buttons
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

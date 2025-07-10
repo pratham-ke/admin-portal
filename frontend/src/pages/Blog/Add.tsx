@@ -1,3 +1,8 @@
+// Add.tsx
+// Blog post creation page for the admin portal.
+// Provides a form for adding new blog posts, including details and image upload.
+// Handles form validation, submission, and feedback.
+
 import React, { useState, useRef } from 'react';
 import {
   Box,
@@ -22,6 +27,7 @@ import ImageUpload from '../../components/ImageUpload';
 import apiClient from '../../services/apiClient';
 
 // --- Embedded Blog Service ---
+// Handles API calls for adding new blog posts.
 const blogService = {
   addPost: (data: FormData) => apiClient.post('/v1/blogs', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -30,6 +36,8 @@ const blogService = {
 // --------------------------
 
 const AddBlog: React.FC = () => {
+  // --- State management ---
+  // State for form fields, error messages, image upload, etc.
   const navigate = useNavigate();
   const { token } = useAuth();
   const editor = useRef(null);
@@ -42,6 +50,8 @@ const AddBlog: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // --- Input/file change handlers ---
+  // Handles file selection for image upload.
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -56,10 +66,13 @@ const AddBlog: React.FC = () => {
     }
   };
 
+  // Handles form field changes.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- Form submission ---
+  // Handles the form submission for adding a new blog post.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -90,6 +103,8 @@ const AddBlog: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the blog post creation form and feedback messages
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

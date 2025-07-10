@@ -1,3 +1,8 @@
+// Dashboard.tsx
+// Main dashboard page for the admin portal.
+// Displays key metrics, charts, and quick access to important sections.
+// Handles data fetching and rendering of dashboard widgets.
+
 import React, { useEffect, useState } from 'react';
 import {
   Grid,
@@ -26,6 +31,8 @@ interface Stats {
 }
 
 const Dashboard: React.FC = () => {
+  // --- State management ---
+  // State for dashboard data, loading, error, etc.
   const [stats, setStats] = useState<Stats>({
     team: 0,
     blog: 0,
@@ -35,6 +42,8 @@ const Dashboard: React.FC = () => {
   });
   const { token, user } = useAuth();
 
+  // --- Data fetching ---
+  // Fetches dashboard metrics and data from the API
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -86,6 +95,11 @@ const Dashboard: React.FC = () => {
     fetchStats();
   }, [token, user]);
 
+  // --- Handlers for dashboard actions ---
+  // ... handler logic ...
+
+  // --- Render ---
+  // Renders the dashboard widgets and metrics
   const StatCard: React.FC<{
     title: string;
     value: number;

@@ -1,3 +1,13 @@
+// Edit.tsx
+// User editing page for the admin portal
+//
+// This component provides a form for administrators to edit existing user details.
+// Features:
+// - Fetch and display user data
+// - Input fields for user details
+// - Form validation
+// - Submission handling and feedback
+
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -12,7 +22,6 @@ import {
   CardContent,
   CardHeader,
   Divider,
-  Avatar,
   CircularProgress,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
@@ -59,6 +68,8 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // --- Data fetching ---
+  // Fetches the user data to populate the form
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -80,6 +91,8 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
     if (id || isProfilePage) fetchUser();
   }, [id, token, isProfilePage]);
 
+  // --- State management ---
+  // State for form fields, error messages, image upload, etc.
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -94,10 +107,14 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
     }
   };
 
+  // --- Input change handler ---
+  // Updates form field values
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- Form submission ---
+  // Handles form validation and user update API call
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -127,6 +144,8 @@ const EditUser: React.FC<EditUserProps> = ({ isProfilePage }) => {
     }
   };
 
+  // --- Render ---
+  // Renders the user editing form and feedback messages
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>

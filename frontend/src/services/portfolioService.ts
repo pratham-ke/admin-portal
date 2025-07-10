@@ -1,3 +1,8 @@
+// portfolioService.ts
+// Service module for portfolio-related API calls in the admin portal.
+// Provides functions for CRUD operations on portfolio items.
+// Usage: Used by portfolio pages for managing portfolio data.
+
 import apiClient from './apiClient';
 
 interface PortfolioFormData {

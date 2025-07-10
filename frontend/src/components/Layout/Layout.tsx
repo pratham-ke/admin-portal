@@ -1,3 +1,8 @@
+// Layout.tsx
+// Main layout component for the admin portal.
+// Provides the overall page structure, including sidebar, header, and content area.
+// Usage: Wraps all main pages to ensure consistent layout and navigation.
+
 import React, { useState } from 'react';
 import { Box, AppBar, Toolbar, Typography, IconButton, Avatar, Menu, MenuItem, ListItemIcon, Divider } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';

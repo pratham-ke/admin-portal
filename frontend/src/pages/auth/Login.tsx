@@ -1,3 +1,8 @@
+// Login.tsx
+// Login page for the admin portal.
+// Allows users to authenticate with email and password.
+// Handles form validation, password encryption, and login logic.
+
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -33,6 +38,8 @@ interface FormErrors {
 }
 
 const Login: React.FC = () => {
+  // --- State management ---
+  // State for login form fields, errors, loading, etc.
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -48,13 +55,16 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // --- Fetching public key ---
+  // Fetches the public key for password encryption on mount
   useEffect(() => {
     fetch('http://localhost:5000/api/auth/public-key')
       .then(res => res.text())
       .then(setPublicKey);
   }, []);
 
-  // Validation functions
+  // --- Validation functions ---
+  // Validation functions for email and password.
   const validateEmail = (email: string): string | undefined => {
     if (!email) return 'Email is required';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,6 +85,8 @@ const Login: React.FC = () => {
     return !Object.values(newErrors).some(error => error !== undefined);
   };
 
+  // --- Input change handlers ---
+  // Handles input changes for form fields.
   const handleInputChange = (field: keyof LoginFormData) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -89,12 +101,16 @@ const Login: React.FC = () => {
     }
   };
 
+  // --- Password encryption ---
+  // Encrypts the password using the fetched public key.
   const encryptPassword = (password: string) => {
     const encryptor = new JSEncrypt();
     encryptor.setPublicKey(publicKey);
     return encryptor.encrypt(password) || '';
   };
 
+  // --- Form submission ---
+  // Handles the form submission to log in the user.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -129,6 +145,8 @@ const Login: React.FC = () => {
     setSnackbarOpen(false);
   };
 
+  // --- Render ---
+  // Renders the login form and feedback messages.
   return (
     <>
       <GlobalStyles styles={{

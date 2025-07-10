@@ -1,3 +1,8 @@
+// List.tsx
+// Portfolio items list page for the admin portal.
+// Displays all portfolio items in a table with options to view, edit, or delete.
+// Fetches portfolio data from the API and manages user actions.
+
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -61,6 +66,8 @@ const PORTFOLIO_ROWS_PER_PAGE_KEY = 'portfolioRowsPerPage';
 const PORTFOLIO_PAGE_KEY = 'portfolioPage';
 
 const Portfolio: React.FC = () => {
+  // --- State management ---
+  // State for portfolio data, loading, error, etc.
   const navigate = useNavigate();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const { token } = useAuth();
@@ -80,6 +87,8 @@ const Portfolio: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
 
+  // --- Data fetching ---
+  // Fetches the list of portfolio items from the API
   const fetchItems = async () => {
     try {
       const response = await portfolioService.getItems();
@@ -94,12 +103,15 @@ const Portfolio: React.FC = () => {
     fetchItems();
   }, []);
 
+  // --- Handlers for actions (edit, delete, etc.) ---
+  // Handler for opening the delete confirmation dialog
   const handleDeleteClick = (id: number) => {
     setDeleteItemId(id);
     setDeleteDialogOpen(true);
     handleMenuClose();
   };
 
+  // Handler for confirming the delete action
   const handleDeleteConfirm = async () => {
     if (deleteItemId !== null) {
       try {
@@ -113,11 +125,13 @@ const Portfolio: React.FC = () => {
     setDeleteItemId(null);
   };
 
+  // Handler for cancelling the delete action
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setDeleteItemId(null);
   };
 
+  // Handler for toggling the status of a portfolio item
   const handleToggleStatus = async (id: number) => {
     // Optimistic update
     const originalItems = [...items];
@@ -137,6 +151,7 @@ const Portfolio: React.FC = () => {
     }
   };
 
+  // Handler for toggling the visibility of a portfolio item
   const handleToggleVisibility = async (id: number) => {
     // Optimistic update
     const originalItems = [...items];
@@ -153,17 +168,20 @@ const Portfolio: React.FC = () => {
     }
   };
 
+  // Handler for sorting the portfolio items
   const handleRequestSort = (property: keyof PortfolioItem) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
+  // Handler for changing the page of portfolio items
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
     localStorage.setItem(PORTFOLIO_PAGE_KEY, newPage.toString());
   };
 
+  // Handler for changing the number of rows per page
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value, 10);
     setRowsPerPage(value);
@@ -172,6 +190,7 @@ const Portfolio: React.FC = () => {
     localStorage.setItem(PORTFOLIO_PAGE_KEY, '0');
   };
 
+  // Helper function for sorting items
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     const aValue = a[orderBy];
     const bValue = b[orderBy];
@@ -185,30 +204,37 @@ const Portfolio: React.FC = () => {
     return 0;
   }
 
+  // Helper function for getting a comparator based on sort order
   function getComparator<Key extends keyof PortfolioItem>(order: 'asc' | 'desc', orderBy: Key): (a: PortfolioItem, b: PortfolioItem) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
+  // Sort and paginate the items
   const sortedItems = items.slice().sort((a,b) => getComparator(order, orderBy)(a,b));
   const paginatedItems = sortedItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // Handler for opening the menu for a portfolio item
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, itemId: number) => {
     setAnchorEl(event.currentTarget);
     setMenuItemId(itemId);
   };
 
+  // Handler for closing the menu
   const handleMenuClose = () => {
     setAnchorEl(null);
     setMenuItemId(null);
   };
 
+  // Handler for editing a portfolio item
   const handleEdit = (id: number) => {
     navigate(`/portfolio/edit/${id}`);
     handleMenuClose();
   };
 
+  // --- Render ---
+  // Renders the portfolio items table and action buttons
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

@@ -1,3 +1,8 @@
+// List.tsx
+// Team members list page for the admin portal.
+// Displays all team members in a table with options to view, edit, or delete.
+// Fetches team data from the API and manages user actions.
+
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -61,7 +66,9 @@ const getImageUrl = (image: string | undefined) => {
 const TEAM_ROWS_PER_PAGE_KEY = 'teamRowsPerPage';
 const TEAM_PAGE_KEY = 'teamPage';
 
-const Team: React.FC = () => {
+const TeamList: React.FC = () => {
+  // --- State management ---
+  // State for team data, loading, error, etc.
   const navigate = useNavigate();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const { token } = useAuth();
@@ -81,6 +88,8 @@ const Team: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteMemberId, setDeleteMemberId] = useState<number | null>(null);
 
+  // --- Data fetching ---
+  // Fetches the list of team members from the API
   const fetchMembers = async () => {
     try {
       const response = await teamService.getMembers();
@@ -95,12 +104,15 @@ const Team: React.FC = () => {
     fetchMembers();
   }, []);
 
+  // --- Handlers for actions (edit, delete, etc.) ---
+  // Handler for deleting a team member
   const handleDeleteClick = (id: number) => {
     setDeleteMemberId(id);
     setDeleteDialogOpen(true);
     handleMenuClose();
   };
 
+  // Handler for confirming the delete action
   const handleDeleteConfirm = async () => {
     if (deleteMemberId !== null) {
       try {
@@ -114,11 +126,13 @@ const Team: React.FC = () => {
     setDeleteMemberId(null);
   };
 
+  // Handler for cancelling the delete action
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setDeleteMemberId(null);
   };
 
+  // Handler for toggling the status of a team member
   const handleToggleStatus = async (id: number) => {
     try {
         await teamService.toggleMemberStatus(String(id));
@@ -134,17 +148,20 @@ const Team: React.FC = () => {
     }
   };
 
+  // Handler for sorting the table
   const handleRequestSort = (property: keyof TeamMember) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
+  // Handler for changing the page
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
     localStorage.setItem(TEAM_PAGE_KEY, newPage.toString());
   };
 
+  // Handler for changing the number of rows per page
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value, 10);
     setRowsPerPage(value);
@@ -153,6 +170,7 @@ const Team: React.FC = () => {
     localStorage.setItem(TEAM_PAGE_KEY, '0');
   };
 
+  // Helper function for sorting
   function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     const aValue = a[orderBy];
     const bValue = b[orderBy];
@@ -166,30 +184,37 @@ const Team: React.FC = () => {
     return 0;
   }
 
+  // Helper function for getting the comparator
   function getComparator<Key extends keyof TeamMember>(order: 'asc' | 'desc', orderBy: Key): (a: TeamMember, b: TeamMember) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
+  // Sort and paginate the members
   const sortedMembers = members.slice().sort((a, b) => getComparator(order, orderBy)(a,b));
   const paginatedMembers = sortedMembers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // Handler for opening the menu
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, memberId: number) => {
     setAnchorEl(event.currentTarget);
     setMenuMemberId(memberId);
   };
 
+  // Handler for closing the menu
   const handleMenuClose = () => {
     setAnchorEl(null);
     setMenuMemberId(null);
   };
 
+  // Handler for editing a team member
   const handleEdit = (id: number) => {
     navigate(`/team/edit/${id}`);
     handleMenuClose();
   }
 
+  // --- Render ---
+  // Renders the team members table and action buttons
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -332,4 +357,4 @@ const Team: React.FC = () => {
   );
 };
 
-export default Team; 
+export default TeamList; 

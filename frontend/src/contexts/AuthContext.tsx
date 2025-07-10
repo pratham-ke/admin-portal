@@ -1,3 +1,8 @@
+// AuthContext.tsx
+// React context for authentication state and actions in the admin portal.
+// Provides user, token, and authentication functions to the app.
+// Usage: Wraps the app to provide authentication context to all components.
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as authService from '../services/authService';
 import { CircularProgress, Box } from '@mui/material';

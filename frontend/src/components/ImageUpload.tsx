@@ -1,3 +1,8 @@
+// ImageUpload.tsx
+// Component for uploading and previewing images (e.g., profile pictures) in forms.
+// Accepts props for preview image, file change handler, label, avatar size, accepted file types, and shape.
+// Usage: Used in user, team, portfolio, and blog forms for image upload.
+
 import React from 'react';
 import { Box, Avatar, Button } from '@mui/material';
 

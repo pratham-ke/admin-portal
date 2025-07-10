@@ -1,3 +1,8 @@
+// toastService.ts
+// Service module for showing toast notifications in the admin portal.
+// Provides functions for displaying success, error, and info toasts.
+// Usage: Used throughout the app for user feedback.
+
 import { AlertColor } from '@mui/material';
 
 interface ToastOptions {

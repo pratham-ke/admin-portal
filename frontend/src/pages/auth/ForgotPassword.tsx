@@ -1,3 +1,8 @@
+// ForgotPassword.tsx
+// Forgot password page for the admin portal.
+// Allows users to request a password reset email.
+// Handles form validation, API call, and feedback.
+
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -25,6 +30,8 @@ interface FormErrors {
 }
 
 const ForgotPassword: React.FC = () => {
+  // --- State management ---
+  // State for email field, errors, loading, etc.
   const [formData, setFormData] = useState<ForgotPasswordFormData>({
     email: '',
   });
@@ -36,6 +43,8 @@ const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const { forgotPassword } = useAuth();
 
+  // --- Validation function ---
+  // ... validation logic ...
   // Validation functions
   const validateEmail = (email: string): string | undefined => {
     if (!email) return 'Email is required';
@@ -51,6 +60,8 @@ const ForgotPassword: React.FC = () => {
     return !Object.values(newErrors).some(error => error !== undefined);
   };
 
+  // --- Input change handler ---
+  // ... handler logic ...
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFormData(prev => ({ ...prev, email: value }));
@@ -66,6 +77,8 @@ const ForgotPassword: React.FC = () => {
     }
   };
 
+  // --- Form submission ---
+  // Handles the form submission to request a password reset
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -118,6 +131,8 @@ const ForgotPassword: React.FC = () => {
     }
   }, [successMessage]);
 
+  // --- Render ---
+  // Renders the forgot password form and feedback messages
   return (
     <>
       <GlobalStyles styles={{

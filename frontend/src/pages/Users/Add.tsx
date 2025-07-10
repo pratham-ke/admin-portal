@@ -1,3 +1,12 @@
+// Add.tsx
+// User creation page for the admin portal
+//
+// This component provides a form for administrators to add new users to the system.
+// Features:
+// - Input fields for user details
+// - Form validation
+// - Submission handling and feedback
+
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -12,7 +21,6 @@ import {
   CardContent,
   CardHeader,
   Divider,
-  Avatar,
   IconButton,
   InputAdornment,
 } from '@mui/material';
@@ -35,6 +43,9 @@ const userService = {
 const AddUser: React.FC = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
+
+  // --- State management ---
+  // State for form fields, error messages, image upload, and password visibility
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -47,12 +58,16 @@ const AddUser: React.FC = () => {
   const [publicKey, setPublicKey] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // --- Fetching data ---
+  // Fetch the public key for password encryption on mount
   useEffect(() => {
     fetch('http://localhost:5000/api/auth/public-key')
       .then(res => res.text())
       .then(setPublicKey);
   }, []);
 
+  // --- File upload handler ---
+  // Handles image file selection and preview
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -67,20 +82,27 @@ const AddUser: React.FC = () => {
     }
   };
 
+  // --- Input change handler ---
+  // Updates form field values
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- Password encryption ---
+  // Encrypts the password using the public key
   const encryptPassword = (password: string) => {
     const encryptor = new JSEncrypt();
     encryptor.setPublicKey(publicKey);
     return encryptor.encrypt(password) || '';
   };
 
+  // --- Form submission ---
+  // Validates input and submits the form to create a new user
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    // Basic validation for required fields
     if (!formData.username || !formData.email || !formData.password) {
       setError('Username, Email, and Password are required.');
       toast.error('Username, Email, and Password are required.');
@@ -88,6 +110,7 @@ const AddUser: React.FC = () => {
     }
 
     try {
+      // Prepare form data for API
       const data = new FormData();
       data.append('username', formData.username);
       data.append('email', formData.email);
@@ -102,6 +125,7 @@ const AddUser: React.FC = () => {
         data.append('image', imageFile);
       }
 
+      // API call to create user
       await userService.createUser(data);
       toast.success('User added successfully!');
       navigate('/users');
@@ -112,8 +136,11 @@ const AddUser: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the user creation form and feedback messages
   return (
     <Box sx={{ p: 3 }}>
+      {/* Header and navigation */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Add New User
@@ -132,13 +159,16 @@ const AddUser: React.FC = () => {
         </Box>
       </Box>
 
+      {/* User creation form */}
       <form id="add-user-form" onSubmit={handleSubmit}>
         <Card component={Paper} elevation={3}>
           <CardHeader title="User Details" />
           <Divider />
           <CardContent>
+            {/* Error message */}
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={3} alignItems="flex-start">
+              {/* Profile image upload */}
               <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 220 }}>
                 <ImageUpload
                   imagePreview={imagePreview}
@@ -147,6 +177,7 @@ const AddUser: React.FC = () => {
                   avatarSize={180}
                 />
               </Grid>
+              {/* User details fields */}
               <Grid item xs={12} md={8}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
@@ -182,7 +213,11 @@ const AddUser: React.FC = () => {
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
-                            <IconButton onClick={() => setShowPassword((s) => !s)} edge="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                            >
                               {showPassword ? <VisibilityOff /> : <Visibility />}
                             </IconButton>
                           </InputAdornment>
@@ -192,22 +227,21 @@ const AddUser: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
-                      fullWidth
                       select
+                      fullWidth
                       label="Role"
                       name="role"
                       value={formData.role}
                       onChange={handleChange}
                     >
-                      <MenuItem value="admin">Admin</MenuItem>
                       <MenuItem value="user">User</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
                     </TextField>
                   </Grid>
                 </Grid>
               </Grid>
             </Grid>
           </CardContent>
-          <Divider />
         </Card>
       </form>
     </Box>

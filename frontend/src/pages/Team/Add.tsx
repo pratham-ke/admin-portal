@@ -1,3 +1,8 @@
+// Add.tsx
+// Team member creation page for the admin portal.
+// Provides a form for adding new team members, including details and image upload.
+// Handles form validation, submission, and feedback.
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -22,6 +27,7 @@ import apiClient from '../../services/apiClient';
 import JoditEditor from 'jodit-react';
 
 // --- Embedded Team Service ---
+// Handles API calls for team member creation.
 const teamService = {
   createMember: (data: FormData) => apiClient.post('/v1/team', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -29,7 +35,9 @@ const teamService = {
 };
 // -------------------------
 
-const AddTeam: React.FC = () => {
+const AddTeamMember: React.FC = () => {
+  // --- State management ---
+  // State for form fields, error messages, image upload, etc.
   const navigate = useNavigate();
   const { token } = useAuth();
   const editor = React.useRef(null);
@@ -44,6 +52,8 @@ const AddTeam: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // --- Input/file change handlers ---
+  // Handles file selection for image upload.
   const handleFileChange = (file: File | null) => {
     if (file) {
       setImageFile(file);
@@ -58,10 +68,13 @@ const AddTeam: React.FC = () => {
     }
   };
 
+  // Handles input changes in the form fields.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- Form submission ---
+  // Handles the form submission logic.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -94,6 +107,8 @@ const AddTeam: React.FC = () => {
     }
   };
 
+  // --- Render ---
+  // Renders the team member creation form and feedback messages
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -185,4 +200,4 @@ const AddTeam: React.FC = () => {
   );
 };
 
-export default AddTeam; 
+export default AddTeamMember; 
